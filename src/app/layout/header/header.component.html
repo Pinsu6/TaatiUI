@@ -1,0 +1,50 @@
+<header class="bg-white rounded-xl p-6 shadow mb-6 border-t-4 border-tati-gold">
+  <div class="flex justify-between items-center gap-4 flex-wrap">
+    <div>
+      <h2 class="text-2xl font-bold text-tati-burgundy">{{ pageTitle }}</h2>
+      <p class="text-gray-600 text-sm">Welcome back — track performance across Sierra Leone</p>
+    </div>
+    <div class="flex items-center gap-3">
+      <button id="refreshBtn" (click)="doRefresh()" class="px-4 py-2 border border-tati-burgundy text-tati-burgundy rounded-md hover:bg-tati-burgundy hover:text-white transition"><i class="fas fa-sync-alt mr-2"></i> Refresh</button>
+      <button (click)="openExportModal()" class="px-4 py-2 border border-tati-burgundy text-tati-burgundy rounded-md hover:bg-tati-burgundy hover:text-white transition"><i class="fas fa-download mr-2"></i> Export</button>
+      <button (click)="openQuickActionModal()" class="px-4 py-2 bg-gradient-to-r from-[#8B1538] to-[#6B0E2B] text-white rounded-md"><i class="fas fa-plus mr-2"></i> Quick Action</button>
+    </div>
+  </div>
+</header>
+
+<div class="bg-green-50 border border-green-200 p-4 rounded-xl flex items-center gap-3 mb-6">
+  <div class="w-2 h-2 bg-green-500 rounded-full pulse-dot"></div>
+  <i class="fas fa-broadcast-tower text-green-600"></i>
+  <div class="text-sm text-gray-700"><strong>Real-time monitoring active</strong> — Last updated: <span>{{ lastUpdate }}</span></div>
+</div>
+
+<!-- Export Modal -->
+<div *ngIf="showExportModal" class="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
+  <div class="bg-white rounded-xl w-96 p-6 shadow">
+    <h3 class="font-semibold text-lg text-tati-burgundy mb-3">Export Report</h3>
+    <p class="text-sm text-gray-600 mb-4">Choose a format and export the current dashboard snapshot.</p>
+    <div class="flex gap-3">
+      <button class="flex-1 px-4 py-2 border rounded-md hover:bg-gray-50">PDF</button>
+      <button class="flex-1 px-4 py-2 border rounded-md hover:bg-gray-50">PNG</button>
+      <button class="flex-1 px-4 py-2 border rounded-md hover:bg-gray-50">CSV</button>
+    </div>
+    <div class="mt-4 text-right">
+      <button (click)="closeExportModal()" class="px-4 py-2 text-sm text-gray-600">Close</button>
+    </div>
+  </div>
+</div>
+
+<!-- Quick Action Modal -->
+<div *ngIf="showQuickActionModal" class="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
+  <div class="bg-white rounded-xl w-96 p-6 shadow">
+    <h3 class="font-semibold text-lg text-tati-burgundy mb-3">Quick Actions</h3>
+    <div class="space-y-3">
+      <button class="w-full px-4 py-2 border rounded-md text-left"><i class="fas fa-upload mr-2"></i> Upload Sales CSV</button>
+      <button class="w-full px-4 py-2 border rounded-md text-left"><i class="fas fa-user-plus mr-2"></i> Add Pharmacy</button>
+      <button class="w-full px-4 py-2 border rounded-md text-left"><i class="fas fa-bullhorn mr-2"></i> Send Campaign</button>
+    </div>
+    <div class="mt-4 text-right">
+      <button (click)="closeQuickActionModal()" class="px-4 py-2 text-sm text-gray-600">Close</button>
+    </div>
+  </div>
+</div>

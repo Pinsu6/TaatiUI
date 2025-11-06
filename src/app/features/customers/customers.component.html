@@ -1,0 +1,141 @@
+<div class="mx-auto">
+    <!-- Search & Filter -->
+    <div
+        class="bg-white rounded-xl p-6 border shadow flex flex-col sm:flex-row justify-between items-center gap-4 mb-6">
+        <div class="relative flex-1">
+            <input type="text" [ngModel]="searchQuery" (input)="onSearchInput($event)"
+                placeholder="Search by name or email..."
+                class="w-full pl-10 pr-4 py-2 border rounded-lg focus:ring-2 focus:ring-tati-burgundy outline-none">
+            <i class="fas fa-search absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
+        </div>
+        <select [(ngModel)]="selectedStatus" (ngModelChange)="onStatusChange()"
+            class="px-4 py-2 border rounded-lg focus:ring-2 focus:ring-tati-burgundy outline-none">
+            <option value="all">All Customers</option>
+            <option value="active">Active</option>
+            <option value="inactive">Inactive</option>
+        </select>
+        <!-- <select [(ngModel)]="pageSize" (ngModelChange)="onPageSizeChange()"
+            class="px-4 py-2 border rounded-lg focus:ring-2 focus:ring-tati-burgundy outline-none">
+            <option *ngFor="let size of pageSizes" [value]="size">{{ size }} per page</option>
+        </select> -->
+    </div>
+
+    <!-- Error Message -->
+    <div *ngIf="errorMessage" class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4 text-center">
+        {{ errorMessage }}
+        <button (click)="refresh()" class="ml-2 underline">Retry</button>
+    </div>
+
+    <!-- Loading Spinner -->
+    <div *ngIf="isLoading" class="flex justify-center items-center py-8">
+        <i class="fas fa-spinner fa-spin text-2xl text-tati-burgundy mr-2"></i>
+        <span>Loading customers...</span>
+    </div>
+
+    <!-- Table (only if not loading/error) -->
+    <div *ngIf="!isLoading && !errorMessage" class="overflow-x-auto bg-white shadow-lg rounded-xl border mb-4">
+        <table class="min-w-full divide-y divide-gray-200">
+            <thead class="bg-tati-burgundy text-white">
+                <tr>
+                    <th class="px-6 py-3 text-left text-sm font-semibold">Cus Code</th>
+                    <th class="px-6 py-3 text-left text-sm font-semibold">Name</th>
+                    <th class="px-6 py-3 text-left text-sm font-semibold">Email</th>
+                    <th class="px-6 py-3 text-left text-sm font-semibold">Phone</th>
+                    <th class="px-6 py-3 text-left text-sm font-semibold">Status</th>
+                    <th class="px-6 py-3 text-center text-sm font-semibold">Action</th>
+                </tr>
+            </thead>
+            <tbody class="divide-y divide-gray-100">
+                <tr *ngIf="customers.length === 0">
+                    <td colspan="5" class="px-6 py-4 text-center text-gray-600">No customers found.</td>
+                </tr>
+                <tr *ngFor="let customer of customers" class="hover:bg-gray-50">
+                    <td class="px-6 py-4 text-sm  text-gray-800">{{ customer.cusCode }}</td>
+                    <td class="px-6 py-4 text-sm font-medium text-gray-800">{{ customer.name }}</td>
+                    <td class="px-6 py-4 text-sm text-gray-600">{{ customer.email }}</td>
+                    <td class="px-6 py-4 text-sm text-gray-600">{{ customer.phone }}</td>
+                    <td class="px-6 py-4 text-sm font-medium"
+                        [ngClass]="customer.status === 'active' ? 'text-green-600' : 'text-red-600'">
+                        {{ customer.status.charAt(0).toUpperCase() + customer.status.slice(1) }}
+                    </td>
+                    <td class="px-6 py-4 text-center">
+                        <a [routerLink]="['/customers', customer.id]"
+                            class="bg-gradient-to-r from-tati-burgundy to-[#6B0E2B] text-white px-3 py-1 rounded-lg text-sm hover:opacity-90 transition">
+                            <i class="fas fa-eye mr-1"></i> View
+                        </a>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Pagination Controls -->
+    <!-- <div *ngIf="!isLoading && !errorMessage && totalCount > 0" class="flex justify-between items-center bg-white rounded-xl p-4 border shadow">
+        <div class="text-sm text-gray-600">
+            Showing {{ (pageNumber - 1) * pageSize + 1 }} - {{ pageNumber * pageSize > totalCount ? totalCount : pageNumber * pageSize }} of {{ totalCount }} customers
+        </div>
+        <div class="flex gap-2">
+            <button (click)="previousPage()" [disabled]="!hasPreviousPage" class="px-4 py-2 border rounded-lg disabled:opacity-50 hover:bg-gray-100">
+                Previous
+            </button>
+            <button *ngFor="let page of [1,2,3,4,5] | slice:0:totalPages" (click)="goToPage(page)" [class.bg-tati-burgundy]="page === pageNumber" [class.text-white]="page === pageNumber" class="px-4 py-2 border rounded-lg hover:bg-gray-100">
+                {{ page }}
+            </button>
+            <span *ngIf="totalPages > 5" class="px-4 py-2">... {{ totalPages }}</span>
+            <button (click)="nextPage()" [disabled]="!hasNextPage" class="px-4 py-2 border rounded-lg disabled:opacity-50 hover:bg-gray-100">
+                Next
+            </button>
+        </div>
+    </div> -->
+
+    <!-- ==== PAGINATION ==== -->
+    <div *ngIf="!isLoading && !errorMessage && totalCount > 0"
+        class="flex justify-between items-center bg-white rounded-xl p-4 border shadow">
+
+        <!-- LEFT SIDE – Page-size + “Showing …” -->
+        <div class="flex items-center gap-4 text-sm text-gray-600">
+            <select [(ngModel)]="pageSize" (ngModelChange)="onPageSizeChange()"
+                class="px-4 py-2 border rounded-lg focus:ring-2 focus:ring-tati-burgundy outline-none">
+                <option *ngFor="let size of pageSizes" [value]="size">
+                    {{ size }} per page
+                </option>
+            </select>
+
+            <span>
+                Showing {{ (pageNumber-1)*pageSize + 1 }} -
+                {{ pageNumber*pageSize > totalCount ? totalCount : pageNumber*pageSize }}
+                of {{ totalCount }} customers
+            </span>
+        </div>
+
+        <!-- RIGHT SIDE – page buttons -->
+        <div class="flex items-center gap-2">
+            <button (click)="previousPage()" [disabled]="!hasPreviousPage"
+                class="px-4 py-2 border rounded-lg disabled:opacity-50 hover:bg-gray-100">
+                Previous
+            </button>
+
+            <!-- dynamic 5-page window -->
+            <button *ngFor="let p of getVisiblePages()" (click)="goToPage(p)"
+                [class.bg-tati-burgundy]="p === pageNumber" [class.text-white]="p === pageNumber"
+                class="px-4 py-2 border rounded-lg hover:bg-gray-100">
+                {{ p }}
+            </button>
+
+            <!-- ellipsis + last page when needed -->
+            <span *ngIf="totalPages > 5 && getVisiblePages()[4] < totalPages" class="px-4 py-2">
+                ... {{ totalPages }}
+            </span>
+
+            <button (click)="nextPage()" [disabled]="!hasNextPage"
+                class="px-4 py-2 border rounded-lg disabled:opacity-50 hover:bg-gray-100">
+                Next
+            </button>
+        </div>
+    </div>
+
+</div>
+
+<footer class="text-center text-gray-500 text-xs py-6">
+    © 2025 Tati Pharma. All rights reserved.
+</footer>

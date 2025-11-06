@@ -1,0 +1,140 @@
+<section class="space-y-8">
+  <!-- KPI Cards -->
+  <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
+    <div class="bg-white p-6 rounded-xl shadow border-t-4 border-blue-500">
+      <div class="flex justify-between items-center mb-2">
+        <i class="fas fa-crown text-blue-500 text-xl"></i>
+        <span class="text-blue-500 text-sm font-semibold">Top Product</span>
+      </div>
+      <div class="text-lg font-bold text-tati-burgundy">Amoxicillin</div>
+      <div class="text-sm text-gray-500">SLL 1.2M Revenue</div>
+    </div>
+    <div class="bg-white p-6 rounded-xl shadow border-t-4 border-green-500">
+      <div class="flex justify-between items-center mb-2">
+        <i class="fas fa-rocket text-green-500 text-xl"></i>
+        <span class="text-green-500 text-sm font-semibold">Fastest Growing</span>
+      </div>
+      <div class="text-lg font-bold text-tati-burgundy">Vitamin C</div>
+      <div class="text-sm text-gray-500">+32% growth</div>
+    </div>
+    <div class="bg-white p-6 rounded-xl shadow border-t-4 border-red-500">
+      <div class="flex justify-between items-center mb-2">
+        <i class="fas fa-turtle text-red-500 text-xl"></i>
+        <span class="text-red-500 text-sm font-semibold">Slowest Moving</span>
+      </div>
+      <div class="text-lg font-bold text-tati-burgundy">Cough Syrup</div>
+      <div class="text-sm text-gray-500">-5% sales</div>
+    </div>
+    <div class="bg-white p-6 rounded-xl shadow border-t-4 border-purple-500">
+      <div class="flex justify-between items-center mb-2">
+        <i class="fas fa-star text-purple-500 text-xl"></i>
+        <span class="text-purple-500 text-sm font-semibold">New Launches</span>
+      </div>
+      <div class="text-lg font-bold text-tati-burgundy">3 SKUs</div>
+      <div class="text-sm text-gray-500">This Quarter</div>
+    </div>
+  </div>
+
+  <!-- Filters -->
+  <div class="bg-white rounded-xl p-6 shadow flex flex-wrap gap-4 items-center">
+    <select class="px-4 py-2 border rounded-md">
+      <option>All Categories</option>
+      <option>Antibiotics</option>
+      <option>Pain Relief</option>
+      <option>Vitamins</option>
+    </select>
+    <select class="px-4 py-2 border rounded-md">
+      <option>All Status</option>
+      <option>Fast Moving</option>
+      <option>Slow Moving</option>
+      <option>New</option>
+    </select>
+    <input type="date" class="px-4 py-2 border rounded-md"/>
+    <button class="px-4 py-2 bg-gradient-to-r from-tati-burgundy to-[#6B0E2B] text-white rounded-md">
+      <i class="fas fa-filter mr-2"></i> Apply Filters
+    </button>
+  </div>
+
+  <!-- Charts -->
+  <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+    <div class="bg-white rounded-xl p-6 shadow border-t-4 border-tati-burgundy">
+      <h3 class="text-lg font-semibold text-tati-burgundy mb-4">Top 10 SKUs by Sales</h3>
+      <div class="chart-container">
+        <canvas #skuChart></canvas>
+      </div>
+    </div>
+    <div class="bg-white rounded-xl p-6 shadow border-t-4 border-tati-gold">
+      <h3 class="text-lg font-semibold text-tati-burgundy mb-4">Product Lifecycle (Example)</h3>
+      <div class="chart-container" style="height:380px">
+        <canvas #lifecycleChart></canvas>
+      </div>
+    </div>
+  </div>
+
+  <!-- Insights Table -->
+  <div class="bg-white rounded-xl shadow border-t-4 border-green-500">
+    <div class="p-6 border-b">
+      <h3 class="text-lg font-semibold text-tati-burgundy">Product Insights Table</h3>
+    </div>
+    <div class="overflow-x-auto">
+      <table class="w-full text-left">
+        <thead class="bg-gray-100 text-xs uppercase text-gray-600">
+          <tr>
+            <th class="px-6 py-3">Product</th>
+            <th class="px-6 py-3">Category</th>
+            <th class="px-6 py-3">Revenue (SLL)</th>
+            <th class="px-6 py-3">Growth</th>
+            <th class="px-6 py-3">Status</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y">
+          <tr *ngFor="let product of products" class="hover:bg-gray-50">
+            <td class="px-6 py-3 font-medium">{{ product.name }}</td>
+            <td class="px-6 py-3">{{ product.category }}</td>
+            <td class="px-6 py-3">{{ product.revenue.toLocaleString() }}</td>
+            <td class="px-6 py-3" [ngClass]="product.growth.startsWith('+') ? 'text-green-600' : 'text-red-600'">{{ product.growth }}</td>
+            <td class="px-6 py-3">
+              <span [ngClass]="{
+                'bg-green-100 text-green-700': product.status === 'Fast Moving',
+                'bg-yellow-100 text-yellow-700': product.status === 'Slow Moving',
+                'bg-purple-100 text-purple-700': product.status === 'New'
+              }" class="text-xs px-2 py-1 rounded">{{ product.status }}</span>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- AI Recommendations -->
+  <div class="bg-white rounded-xl shadow border-t-4 border-blue-500">
+    <div class="p-6 border-b">
+      <h3 class="text-lg font-semibold text-tati-burgundy">
+        <i class="fas fa-robot mr-2 text-blue-500"></i> AI-Based Product Recommendations
+      </h3>
+      <p class="text-gray-600 text-sm">AI-driven reorder & demand forecasting</p>
+    </div>
+    <div class="overflow-x-auto">
+      <table class="w-full text-left">
+        <thead class="bg-gray-100 text-xs uppercase text-gray-600">
+          <tr>
+            <th class="px-6 py-3">Product</th>
+            <th class="px-6 py-3">Current Stock</th>
+            <th class="px-6 py-3">Avg Monthly Demand</th>
+            <th class="px-6 py-3">Forecast (Next Month)</th>
+            <th class="px-6 py-3">Recommendation</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y">
+          <tr *ngFor="let reco of aiRecommendations" class="hover:bg-gray-50">
+            <td class="px-6 py-3 font-medium">{{ reco.product }}</td>
+            <td class="px-6 py-3">{{ reco.stock }}</td>
+            <td class="px-6 py-3">{{ reco.demand }}</td>
+            <td class="px-6 py-3">{{ reco.forecast }}</td>
+            <td class="px-6 py-3 text-blue-600 font-medium">{{ reco.recommendation }}</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>

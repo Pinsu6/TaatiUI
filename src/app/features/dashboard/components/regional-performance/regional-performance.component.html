@@ -1,0 +1,58 @@
+<main class="space-y-8">
+  <!-- KPI Cards -->
+  <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
+    <div class="bg-white p-6 rounded-xl shadow border-t-4 border-blue-500" *ngFor="let region of regions; let i = index" [ngClass]="{'border-green-500': i === 1, 'border-purple-500': i === 2, 'border-yellow-500': i === 3}">
+      <h3 [ngClass]="{'text-blue-500': i === 0, 'text-green-500': i === 1, 'text-purple-500': i === 2, 'text-yellow-500': i === 3}" class="font-semibold mb-2">{{ region.name }}</h3>
+      <div class="text-2xl font-bold text-tati-burgundy">SLL {{ region.revenue / 1000000 }}M</div>
+      <div class="text-sm" [ngClass]="region.growth >= 0 ? 'text-green-600' : 'text-red-600'">{{ region.growth >= 0 ? '+' : '' }}{{ region.growth }}% growth</div>
+    </div>
+  </div>
+
+  <!-- Map + Bar Chart -->
+  <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+    <div class="bg-white p-6 rounded-xl shadow border-t-4 border-tati-burgundy">
+      <h3 class="text-lg font-semibold text-tati-burgundy mb-4">Regional Map</h3>
+      <div #map class="map-container"></div>
+    </div>
+    <div class="bg-white p-6 rounded-xl shadow border-t-4 border-tati-gold">
+      <h3 class="text-lg font-semibold text-tati-burgundy mb-4">Revenue by Region</h3>
+      <div class="chart-container">
+        <canvas #regionChart></canvas>
+      </div>
+    </div>
+  </div>
+
+  <!-- Table -->
+  <div class="bg-white rounded-xl shadow border-t-4 border-green-500">
+    <div class="p-6 border-b">
+      <h3 class="text-lg font-semibold text-tati-burgundy">Top Cities by Region</h3>
+    </div>
+    <div class="overflow-x-auto">
+      <table class="w-full text-left">
+        <thead class="bg-gray-100 text-xs uppercase text-gray-600">
+          <tr>
+            <th class="px-6 py-3">Region</th>
+            <th class="px-6 py-3">City</th>
+            <th class="px-6 py-3">Revenue (SLL)</th>
+            <th class="px-6 py-3">Orders</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y">
+          <tr *ngFor="let region of regions">
+            <td class="px-6 py-3">{{ region.name }}</td>
+            <td class="px-6 py-3">{{ region.city }}</td>
+            <td class="px-6 py-3 font-semibold">{{ region.revenue.toLocaleString() }}</td>
+            <td class="px-6 py-3">{{ region.orders }}</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Back Button -->
+  <!-- <div class="text-right">
+    <button (click)="goBack()" class="px-4 py-2 border rounded-md text-tati-burgundy hover:bg-tati-burgundy hover:text-white transition">
+      <i class="fas fa-arrow-left mr-2"></i> Back
+    </button>
+  </div> -->
+</main>

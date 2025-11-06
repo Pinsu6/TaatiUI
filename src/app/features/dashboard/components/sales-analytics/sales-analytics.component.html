@@ -1,0 +1,112 @@
+<main class="space-y-8">
+  <!-- KPI Cards -->
+  <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
+    <div class="bg-white p-6 rounded-xl shadow border-t-4 border-blue-500">
+      <div class="flex justify-between items-center mb-2">
+        <i class="fas fa-calendar text-blue-500 text-xl"></i>
+        <span class="text-blue-500 text-sm font-semibold">Monthly</span>
+      </div>
+      <div class="text-2xl font-bold text-tati-burgundy">SLL 2.3M</div>
+      <div class="text-sm text-gray-500">This Month Sales</div>
+    </div>
+    <div class="bg-white p-6 rounded-xl shadow border-t-4 border-green-500">
+      <div class="flex justify-between items-center mb-2">
+        <i class="fas fa-chart-line text-green-500 text-xl"></i>
+        <span class="text-green-500 text-sm font-semibold">Quarterly</span>
+      </div>
+      <div class="text-2xl font-bold text-tati-burgundy">SLL 6.7M</div>
+      <div class="text-sm text-gray-500">This Quarter Sales</div>
+    </div>
+    <div class="bg-white p-6 rounded-xl shadow border-t-4 border-purple-500">
+      <div class="flex justify-between items-center mb-2">
+        <i class="fas fa-layer-group text-purple-500 text-xl"></i>
+        <span class="text-purple-500 text-sm font-semibold">YTD</span>
+      </div>
+      <div class="text-2xl font-bold text-tati-burgundy">SLL 18.7M</div>
+      <div class="text-sm text-gray-500">Year to Date</div>
+    </div>
+    <div class="bg-white p-6 rounded-xl shadow border-t-4 border-yellow-500">
+      <div class="flex justify-between items-center mb-2">
+        <i class="fas fa-receipt text-yellow-500 text-xl"></i>
+        <span class="text-yellow-500 text-sm font-semibold">Orders</span>
+      </div>
+      <div class="text-2xl font-bold text-tati-burgundy">SLL 68K</div>
+      <div class="text-sm text-gray-500">Avg. Order Value</div>
+    </div>
+  </div>
+
+  <!-- Filters -->
+  <div class="bg-white rounded-xl p-6 shadow flex flex-wrap gap-4 items-center">
+    <select class="px-4 py-2 border rounded-md">
+      <option>This Month</option>
+      <option>Last Month</option>
+      <option>Last 3 Months</option>
+      <option>This Year</option>
+    </select>
+    <select class="px-4 py-2 border rounded-md">
+      <option>All Regions</option>
+      <option>Western Area</option>
+      <option>Northern Province</option>
+      <option>Southern Province</option>
+    </select>
+    <select class="px-4 py-2 border rounded-md">
+      <option>All Products</option>
+      <option>Antibiotics</option>
+      <option>Pain Relief</option>
+      <option>Vitamins</option>
+    </select>
+    <button class="px-4 py-2 bg-gradient-to-r from-tati-burgundy to-[#6B0E2B] text-white rounded-md">
+      <i class="fas fa-filter mr-2"></i> Apply Filters
+    </button>
+  </div>
+
+  <!-- Charts -->
+  <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+    <div class="bg-white rounded-xl p-6 shadow border-t-4 border-tati-burgundy">
+      <h3 class="text-lg font-semibold text-tati-burgundy mb-4">Monthly Sales Trend</h3>
+      <div class="chart-container">
+        <canvas #trendChart></canvas>
+      </div>
+    </div>
+    <div class="bg-white rounded-xl p-6 shadow border-t-4 border-tati-gold">
+      <h3 class="text-lg font-semibold text-tati-burgundy mb-4">Top Products by Sales</h3>
+      <div class="chart-container">
+        <canvas #productsChart></canvas>
+      </div>
+    </div>
+  </div>
+
+  <!-- Sales by Region Table -->
+  <div class="bg-white rounded-xl shadow border-t-4 border-green-500">
+    <div class="p-6 border-b">
+      <h3 class="text-lg font-semibold text-tati-burgundy">Sales by Region</h3>
+    </div>
+    <div class="overflow-x-auto">
+      <table class="w-full text-left">
+        <thead class="bg-gray-100 text-xs uppercase text-gray-600">
+          <tr>
+            <th class="px-6 py-3">Region</th>
+            <th class="px-6 py-3">Revenue (SLL)</th>
+            <th class="px-6 py-3">Orders</th>
+            <th class="px-6 py-3">Growth</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y">
+          <tr *ngFor="let region of regions">
+            <td class="px-6 py-3">{{ region.name }}</td>
+            <td class="px-6 py-3 font-semibold">{{ region.revenue.toLocaleString() }}</td>
+            <td class="px-6 py-3">{{ region.orders }}</td>
+            <td class="px-6 py-3" [ngClass]="region.growth >= 0 ? 'text-green-600' : 'text-red-600'">{{ region.growth >= 0 ? '+' : '' }}{{ region.growth }}%</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Back Button -->
+  <!-- <div class="text-right">
+    <button (click)="goBack()" class="px-4 py-2 border rounded-md text-tati-burgundy hover:bg-tati-burgundy hover:text-white transition">
+      <i class="fas fa-arrow-left mr-2"></i> Back
+    </button>
+  </div> -->
+</main>

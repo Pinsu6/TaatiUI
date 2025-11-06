@@ -1,0 +1,92 @@
+<div class="mx-auto">
+  <!-- Search & Filter -->
+  <div class="bg-white rounded-xl p-6 border shadow flex flex-col sm:flex-row justify-between items-center gap-4 mb-6">
+    <div class="relative flex-1">
+      <input type="text" [(ngModel)]="searchTerm" (input)="onSearchChange($event)"
+        placeholder="Search by name, code, or quick code..."
+        class="w-full pl-10 pr-4 py-2 border rounded-lg focus:ring-2 focus:ring-tati-burgundy outline-none">
+      <i class="fas fa-search absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
+    </div>
+    <select [(ngModel)]="selectedCategory" (ngModelChange)="onCategoryChange()"
+      class="px-4 py-2 border rounded-lg focus:ring-2 focus:ring-tati-burgundy outline-none">
+      <option value="All Categories">All Categories</option>
+      <option *ngFor="let cat of categories | slice:1" [value]="cat">{{ cat }}</option>
+    </select>
+  </div>
+
+  <!-- Error Message -->
+  <div *ngIf="errorMessage" class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4 text-center">
+    {{ errorMessage }}
+    <button (click)="refresh()" class="ml-2 underline">Retry</button>
+  </div>
+
+  <!-- Loading Spinner -->
+  <div *ngIf="isLoading" class="flex justify-center items-center py-8">
+    <i class="fas fa-spinner fa-spin text-2xl text-tati-burgundy mr-2"></i>
+    <span>Loading products...</span>
+  </div>
+
+  <!-- Table (only if not loading/error) -->
+  <div *ngIf="!isLoading && !errorMessage" class="overflow-x-auto bg-white shadow-lg rounded-xl border mb-4">
+    <table class="min-w-full divide-y divide-gray-200">
+      <thead class="bg-tati-burgundy text-white">
+        <tr>
+          <th class="px-6 py-3 text-left text-sm font-semibold">Drug Name</th>
+          <th class="px-6 py-3 text-left text-sm font-semibold">Quick Code</th>
+          <th class="px-6 py-3 text-left text-sm font-semibold">Brand Name</th>
+          <th class="px-6 py-3 text-left text-sm font-semibold">Pack Size</th>
+          <th class="px-6 py-3 text-left text-sm font-semibold">Type</th>
+          <th class="px-6 py-3 text-left text-sm font-semibold">Dosage Form</th>
+          <th class="px-6 py-3 text-left text-sm font-semibold">Manufacturer</th>
+          <th class="px-6 py-3 text-center text-sm font-semibold">Action</th>
+        </tr>
+      </thead>
+      <tbody class="divide-y divide-gray-100">
+        <tr *ngIf="products.length === 0">
+          <td colspan="8" class="px-6 py-4 text-center text-gray-600">No products found.</td>
+        </tr>
+        <tr *ngFor="let product of products" class="hover:bg-gray-50">
+          <td class="px-6 py-4 text-sm font-medium text-gray-800">{{ product.name }}</td>
+          <td class="px-6 py-4 text-sm text-gray-600">{{ product.quickCode }}</td>
+          <td class="px-6 py-4 text-sm text-gray-600">{{ product.brandName }}</td>
+          <td class="px-6 py-4 text-sm text-gray-600">{{ product.quantityPack }}</td>
+          <td class="px-6 py-4 text-sm text-gray-600">{{ product.drugTypeName }}</td>
+          <td class="px-6 py-4 text-sm text-gray-600">{{ product.dosageFormName }}</td>
+          <td class="px-6 py-4 text-sm text-gray-600">{{ product.manufacturerName }}</td>
+          <td class="px-6 py-4 text-center">
+            <button (click)="viewProduct(product.id)"
+              class="bg-gradient-to-r from-tati-burgundy to-[#6B0E2B] text-white px-3 py-1 rounded-lg text-sm hover:opacity-90 transition">
+              <i class="fas fa-eye mr-1"></i> View
+            </button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Pagination -->
+  <div *ngIf="!isLoading && !errorMessage && totalCount > 0"
+    class="flex justify-between items-center bg-white rounded-xl p-4 border shadow">
+    <div class="flex items-center gap-4 text-sm text-gray-600">
+      <select [(ngModel)]="pageSize" (ngModelChange)="onPageSizeChange()"
+        class="px-4 py-2 border rounded-lg focus:ring-2 focus:ring-tati-burgundy outline-none">
+        <option *ngFor="let size of pageSizes" [value]="size">{{ size }} per page</option>
+      </select>
+      <span>
+        Showing {{ (pageNumber-1)*pageSize + 1 }} - {{ pageNumber*pageSize > totalCount ? totalCount : pageNumber*pageSize }} of {{ totalCount }} products
+      </span>
+    </div>
+    <div class="flex items-center gap-2">
+      <button (click)="previousPage()" [disabled]="!hasPreviousPage"
+        class="px-4 py-2 border rounded-lg disabled:opacity-50 hover:bg-gray-100">Previous</button>
+      <button *ngFor="let p of getVisiblePages()" (click)="goToPage(p)"
+        [class.bg-tati-burgundy]="p === pageNumber" [class.text-white]="p === pageNumber"
+        class="px-4 py-2 border rounded-lg hover:bg-gray-100">{{ p }}</button>
+      <span *ngIf="totalPages > 5 && getVisiblePages()[4] < totalPages" class="px-4 py-2">... {{ totalPages }}</span>
+      <button (click)="nextPage()" [disabled]="!hasNextPage"
+        class="px-4 py-2 border rounded-lg disabled:opacity-50 hover:bg-gray-100">Next</button>
+    </div>
+  </div>
+</div>
+
+<footer class="text-center text-gray-500 text-xs py-6">© 2025 Tati Pharma. All rights reserved.</footer>

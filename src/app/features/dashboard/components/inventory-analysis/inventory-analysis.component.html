@@ -1,0 +1,81 @@
+<main class="space-y-8">
+  <!-- KPI Cards -->
+  <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
+    <div class="bg-white p-6 rounded-xl shadow border-t-4 border-blue-500">
+      <h3 class="text-blue-500 font-semibold mb-2">Total Stock Value</h3>
+      <div class="text-2xl font-bold text-tati-burgundy">SLL 12.4M</div>
+      <div class="text-sm text-gray-500">Across all warehouses</div>
+    </div>
+    <div class="bg-white p-6 rounded-xl shadow border-t-4 border-red-500">
+      <h3 class="text-red-500 font-semibold mb-2">Stock-Outs</h3>
+      <div class="text-2xl font-bold text-tati-burgundy">14</div>
+      <div class="text-sm text-gray-500">Products currently out of stock</div>
+    </div>
+    <div class="bg-white p-6 rounded-xl shadow border-t-4 border-yellow-500">
+      <h3 class="text-yellow-500 font-semibold mb-2">Overstock Alerts</h3>
+      <div class="text-2xl font-bold text-tati-burgundy">7</div>
+      <div class="text-sm text-gray-500">Exceeding optimal levels</div>
+    </div>
+    <div class="bg-white p-6 rounded-xl shadow border-t-4 border-green-500">
+      <h3 class="text-green-500 font-semibold mb-2">Avg. Turnover</h3>
+      <div class="text-2xl font-bold text-tati-burgundy">5.1x</div>
+      <div class="text-sm text-gray-500">Per year</div>
+    </div>
+  </div>
+
+  <!-- Charts -->
+  <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+    <div class="bg-white p-6 rounded-xl shadow border-t-4 border-tati-burgundy">
+      <h3 class="text-lg font-semibold text-tati-burgundy mb-4">Stock by Category</h3>
+      <div class="chart-container">
+        <canvas #categoryChart></canvas>
+      </div>
+    </div>
+    <div class="bg-white p-6 rounded-xl shadow border-t-4 border-tati-gold">
+      <h3 class="text-lg font-semibold text-tati-burgundy mb-4">Inventory Turnover Ratio (Monthly)</h3>
+      <div class="chart-container">
+        <canvas #turnoverChart></canvas>
+      </div>
+    </div>
+  </div>
+
+  <!-- Stock Alerts Table -->
+  <div class="bg-white rounded-xl shadow border-t-4 border-red-500">
+    <div class="p-6 border-b">
+      <h3 class="text-lg font-semibold text-tati-burgundy">Stock Alerts</h3>
+    </div>
+    <div class="overflow-x-auto">
+      <table class="w-full text-left">
+        <thead class="bg-gray-100 text-xs uppercase text-gray-600">
+          <tr>
+            <th class="px-6 py-3">Product</th>
+            <th class="px-6 py-3">Category</th>
+            <th class="px-6 py-3">Current Stock</th>
+            <th class="px-6 py-3">Status</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y">
+          <tr *ngFor="let alert of stockAlerts">
+            <td class="px-6 py-3 font-medium">{{ alert.product }}</td>
+            <td class="px-6 py-3">{{ alert.category }}</td>
+            <td class="px-6 py-3">{{ alert.currentStock.toLocaleString() }}</td>
+            <td class="px-6 py-3">
+              <span [ngClass]="{
+                'bg-red-100 text-red-700': alert.status === 'Stock-Out',
+                'bg-yellow-100 text-yellow-700': alert.status === 'Overstock',
+                'bg-green-100 text-green-700': alert.status === 'Low Stock'
+              }" class="text-xs px-2 py-1 rounded">{{ alert.status }}</span>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Back Button -->
+  <!-- <div class="text-right">
+    <button (click)="goBack()" class="px-4 py-2 border rounded-md text-tati-burgundy hover:bg-tati-burgundy hover:text-white transition">
+      <i class="fas fa-arrow-left mr-2"></i> Back
+    </button>
+  </div> -->
+</main>

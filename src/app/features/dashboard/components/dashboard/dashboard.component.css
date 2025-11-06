@@ -1,0 +1,11 @@
+
+
+.chart-container {
+  position: relative;
+  height: 400px;
+  width: 100%;
+}
+
+.map-container {
+  height: 350px;
+}

@@ -1,0 +1,237 @@
+<section class="mx-auto">
+  <!-- Profile -->
+  <div class="bg-white border shadow rounded-xl p-6 mb-6">
+    <!-- Header with Name and Back Button -->
+    <div class="flex items-center justify-between mb-6">
+      <div>
+        <h2 class="text-2xl font-bold text-tati-burgundy">{{ customer?.name || 'Unknown Customer' }}</h2>
+        <p class="text-gray-600 mt-1">Customer ID: #{{ customer?.id || 'N/A' }}</p>
+        <div class="mt-2">
+          <span class="inline-flex px-3 py-1 rounded-full text-sm font-medium"
+            [ngClass]="customer?.bitIsActive ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'">
+            {{ customer?.bitIsActive ? 'Active' : 'Inactive' }}
+          </span>
+        </div>
+      </div>
+      <button (click)="goBack()"
+        class="px-6 py-2 bg-tati-burgundy text-white rounded-lg hover:bg-opacity-90 transition duration-200 font-medium">
+        ← Back to List
+      </button>
+    </div>
+
+    <!-- Two-Column Grid for Details -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+
+      <!-- Left Column: Basic & Contact Info -->
+      <div>
+        <!-- Customer Code & Dates -->
+        <div class="mb-6">
+          <h3 class="text-lg font-semibold text-tati-burgundy mb-3 border-b border-gray-200 pb-2">Basic Information</h3>
+          <div class="space-y-2 text-sm">
+            <p><span class="font-medium text-gray-700">Customer Code:</span> <span class="text-gray-500">{{
+                customer?.cusCode || 'N/A' }}</span></p>
+            <p><span class="font-medium text-gray-700">Created Date:</span> <span class="text-gray-500">{{
+                customer?.dateCreated || 'N/A' }}</span></p>
+          </div>
+        </div>
+
+        <!-- Contact Details -->
+        <div class="mb-6">
+          <h3 class="text-lg font-semibold text-tati-burgundy mb-3 border-b border-gray-200 pb-2">Contact Details</h3>
+          <div class="space-y-2 text-sm">
+            <p><span class="font-medium text-gray-700">Email:</span> <span class="text-gray-500">{{ customer?.email ||
+                'N/A' }}</span></p>
+            <p><span class="font-medium text-gray-700">Primary Phone:</span> <span class="text-gray-500">{{
+                customer?.phone || 'N/A' }}</span></p>
+            <p><span class="font-medium text-gray-700">Mobile:</span> <span class="text-gray-500">{{
+                customer?.cusMobileno || 'N/A' }}</span></p>
+            <p><span class="font-medium text-gray-700">Office Phone:</span> <span class="text-gray-500">{{
+                customer?.cusPhonenoO || 'N/A' }}</span></p>
+            <p><span class="font-medium text-gray-700">Residence Phone:</span> <span class="text-gray-500">{{
+                customer?.cusPhonenoR || 'N/A' }}</span></p>
+          </div>
+        </div>
+
+        <!-- Address Details -->
+        <div class="mb-6">
+          <h3 class="text-lg font-semibold text-tati-burgundy mb-3 border-b border-gray-200 pb-2">Address</h3>
+          <div class="space-y-2 text-sm">
+            <p><span class="font-medium text-gray-700">Address:</span> <span class="text-gray-500">{{ customer?.address
+                || 'N/A' }}</span></p>
+            <p><span class="font-medium text-gray-700">City:</span> <span class="text-gray-500">{{ customer?.city ||
+                'N/A' }}</span></p>
+            <p><span class="font-medium text-gray-700">District:</span> <span class="text-gray-500">{{
+                customer?.district || 'N/A' }}</span></p>
+            <p><span class="font-medium text-gray-700">Region:</span> <span class="text-gray-500">{{ customer?.region ||
+                'N/A' }}</span></p>
+            <p><span class="font-medium text-gray-700">Country:</span> <span class="text-gray-500">{{ customer?.country
+                || 'N/A' }}</span></p>
+            <p><span class="font-medium text-gray-700">PIN Code:</span> <span class="text-gray-500">{{ customer?.pin ||
+                'N/A' }}</span></p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Right Column: Financial, License & Relations -->
+      <div>
+        <!-- Financial & Credit -->
+        <div class="mb-6">
+          <h3 class="text-lg font-semibold text-tati-burgundy mb-3 border-b border-gray-200 pb-2">Financial Details</h3>
+          <div class="space-y-2 text-sm">
+            <p><span class="font-medium text-gray-700">Credit Limit:</span> <span class="text-gray-500">₹{{
+                customer?.creditlim?.toLocaleString() || 'N/A' }}</span></p>
+            <p><span class="font-medium text-gray-700">Credit Days:</span> <span class="text-gray-500">{{
+                customer?.creditdays || 'N/A' }}</span></p>
+            <p><span class="font-medium text-gray-700">Store Amount Remaining:</span> <span class="text-gray-500">₹{{
+                customer?.storeAmtremain?.toLocaleString() || '0' }}</span></p>
+            <p><span class="font-medium text-gray-700">Store Amount Used:</span> <span class="text-gray-500">₹{{
+                customer?.storeAmtused?.toLocaleString() || '0' }}</span></p>
+          </div>
+        </div>
+
+        <!-- License Details -->
+        <div class="mb-6">
+          <h3 class="text-lg font-semibold text-tati-burgundy mb-3 border-b border-gray-200 pb-2">License Information
+          </h3>
+          <div class="space-y-2 text-sm">
+            <p><span class="font-medium text-gray-700">PBSL License:</span> <span class="text-gray-500">{{
+                customer?.pbsllicense || 'N/A' }}</span></p>
+            <p><span class="font-medium text-gray-700">License Type:</span> <span class="text-gray-500">{{
+                customer?.licenseType || 'N/A' }}</span></p>
+            <p><span class="font-medium text-gray-700">Expiry Date:</span> <span class="text-gray-500">{{
+                customer?.licenseExpiry || 'N/A' }}</span></p>
+          </div>
+        </div>
+
+        <!-- Customer Type -->
+        <div *ngIf="customer?.customerType" class="mb-6">
+          <h3 class="text-lg font-semibold text-tati-burgundy mb-3 border-b border-gray-200 pb-2">Customer Type</h3>
+          <div class="space-y-2 text-sm">
+            <p><span class="font-medium text-gray-700">Type Name:</span> <span class="text-gray-500">{{
+                customer?.customerType?.cusTypeName || 'N/A' }}</span></p>
+            <p><span class="font-medium text-gray-700">Active:</span>
+              <span class="text-gray-500">{{ customer?.customerType?.bitIsActive ? 'Yes' : 'No' }}</span>
+            </p>
+            <p><span class="font-medium text-gray-700">Created:</span> <span class="text-gray-500">{{
+                customer?.customerType?.dateCreated || 'N/A' }}</span></p>
+          </div>
+        </div>
+
+        <!-- Assigned Employee -->
+        <div *ngIf="customer?.employee" class="mb-6">
+          <h3 class="text-lg font-semibold text-tati-burgundy mb-3 border-b border-gray-200 pb-2">Assigned Employee</h3>
+          <div class="space-y-2 text-sm">
+            <p><span class="font-medium text-gray-700">Name:</span> <span class="text-gray-500">{{
+                customer?.employee?.employeeName || 'N/A' }}</span></p>
+            <p><span class="font-medium text-gray-700">Short Name:</span> <span class="text-gray-500">{{
+                customer?.employee?.empShort || 'N/A' }}</span></p>
+            <p><span class="font-medium text-gray-700">Position:</span> <span class="text-gray-500">{{
+                customer?.employee?.empPosition || 'N/A' }}</span></p>
+            <p><span class="font-medium text-gray-700">Email:</span> <span class="text-gray-500">{{
+                customer?.employee?.empEmail || 'N/A' }}</span></p>
+            <p><span class="font-medium text-gray-700">Mobile:</span> <span class="text-gray-500">{{
+                customer?.employee?.empMobile || 'N/A' }}</span></p>
+            <p><span class="font-medium text-gray-700">Address:</span> <span class="text-gray-500">{{
+                customer?.employee?.empAddress || 'N/A' }}</span></p>
+            <p><span class="font-medium text-gray-700">Employee Type:</span> <span class="text-gray-500">{{
+                customer?.employee?.empType || 'N/A' }}</span></p>
+            <p><span class="font-medium text-gray-700">Start Date:</span> <span class="text-gray-500">{{
+                customer?.employee?.empStartDate || 'N/A' }}</span></p>
+            <p><span class="font-medium text-gray-700">Active:</span>
+              <span class="text-gray-500">{{ customer?.employee?.bitIsActive ? 'Yes' : 'No' }}</span>
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- KPIs -->
+  <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-6">
+    <div class="bg-white p-6 rounded-xl shadow border-t-4 border-tati-burgundy">
+      <h3 class="text-gray-500">Total Orders</h3>
+      <p class="text-2xl font-bold text-tati-burgundy">{{ customer?.totalOrders || 0 }}</p>
+    </div>
+    <div class="bg-white p-6 rounded-xl shadow border-t-4 border-green-500">
+      <h3 class="text-gray-500">Lifetime Value</h3>
+      <p class="text-2xl font-bold text-green-600">₹{{ customer?.lifetimeValue?.toLocaleString() || '0' }}</p>
+    </div>
+    <div class="bg-white p-6 rounded-xl shadow border-t-4 border-blue-500">
+      <h3 class="text-gray-500">Last Purchase</h3>
+      <p class="text-2xl font-bold text-blue-600">{{ customer?.lastPurchase || 'N/A' }}</p>
+    </div>
+    <div class="bg-white p-6 rounded-xl shadow border-t-4 border-yellow-500">
+      <h3 class="text-gray-500">Active Policies</h3>
+      <p class="text-2xl font-bold text-yellow-600">{{ customer?.activePolicies || 0 }}</p>
+    </div>
+  </div>
+
+  <!-- Charts -->
+  <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+    <div class="bg-white p-6 rounded-xl shadow border-t-4 border-tati-burgundy">
+      <h3 class="font-semibold text-tati-burgundy mb-4">Purchase Trend</h3>
+      <div class="chart-container">
+        <canvas #purchaseTrend></canvas>
+      </div>
+    </div>
+    <div class="bg-white p-6 rounded-xl shadow border-t-4 border-green-500">
+      <h3 class="font-semibold text-green-600 mb-4">Product Category Split</h3>
+      <div class="chart-container" style="height:300px">
+        <canvas #categorySplit></canvas>
+      </div>
+    </div>
+  </div>
+
+  <!-- Orders Table -->
+  <div class="bg-white rounded-xl shadow border-t-4 border-blue-500 mb-6">
+    <div class="p-6 border-b">
+      <h3 class="font-semibold text-blue-600">Order History</h3>
+    </div>
+    <div class="overflow-x-auto">
+      <table class="w-full text-sm">
+        <thead class="bg-gray-100 text-gray-600 uppercase text-xs">
+          <tr>
+            <th class="px-6 py-3">Order ID</th>
+            <th class="px-6 py-3">Date</th>
+            <th class="px-6 py-3">Items</th>
+            <th class="px-6 py-3">Total</th>
+            <th class="px-6 py-3">Status</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y">
+          <tr *ngFor="let order of customer?.orderHistory || []">
+            <td class="px-6 py-3">{{ order.orderId }}</td>
+            <td class="px-6 py-3">{{ order.date }}</td>
+            <td class="px-6 py-3">{{ order.items }}</td>
+            <td class="px-6 py-3">₹{{ order.total.toLocaleString() }}</td>
+            <td class="px-6 py-3" [ngClass]="order.status === 'Delivered' ? 'text-green-600' : 'text-yellow-600'">
+              {{ order.status }}
+            </td>
+          </tr>
+          <tr *ngIf="!customer?.orderHistory?.length">
+            <td colspan="5" class="px-6 py-3 text-center text-gray-600">No orders found.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Engagement -->
+  <div class="bg-white rounded-xl shadow border-t-4 border-yellow-500">
+    <div class="p-6 border-b">
+      <h3 class="font-semibold text-yellow-600">Engagement</h3>
+    </div>
+    <div class="p-6">
+      <ul class="list-disc ml-5 text-gray-700">
+        <!-- <li *ngFor="let engagement of customer?.engagement || []">
+          {{ engagement.type }} ({{ engagement.date }}) — {{ engagement.status }}
+        </li>
+        <li *ngIf="!customer?.engagement?.length" class="text-gray-600">No engagement records found.</li> -->
+        <li *ngFor="let engagement of customer?.engagement || []">
+          {{ engagement.type }} ({{ engagement.date }}) — {{ engagement.status }}
+        </li>
+        <li *ngIf="!customer?.engagement?.length" class="text-gray-600">No engagement records found.</li>
+      </ul>
+    </div>
+  </div>
+</section>

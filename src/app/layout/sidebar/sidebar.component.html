@@ -1,0 +1,60 @@
+<aside
+  class="fixed inset-y-0 left-0 w-72 bg-gradient-to-b from-[#8B1538] to-[#6B0E2B] text-white shadow-xl z-40 overflow-y-auto">
+  <div class="p-6 border-b border-white/10">
+    <div class="flex items-center gap-3">
+      <i class="fas fa-pills text-tati-gold text-3xl"></i>
+      <div>
+        <h1 class="font-bold text-xl">Tati Pharmaceuticals</h1>
+        <p class="text-sm text-yellow-300">Business Intelligence</p>
+      </div>
+    </div>
+  </div>
+
+  <nav class="p-4">
+    <h3 class="text-xs text-yellow-300 uppercase tracking-wider mb-2">Analytics</h3>
+    <ul class="space-y-1">
+      <li><a routerLink="/dashboard" routerLinkActive="bg-white/10"
+          class="flex items-center gap-3 px-3 py-2 rounded-md hover:bg-white/5"><i class="fas fa-chart-pie w-4"></i>
+          Dashboard</a></li>
+      <li><a routerLink="/dashboard/sales-analytics" routerLinkActive="bg-white/10"
+          class="flex items-center gap-3 px-3 py-2 rounded-md hover:bg-white/5"><i class="fas fa-chart-bar w-4"></i>
+          Sales Analytics</a></li>
+      <li><a routerLink="/dashboard/product-insights" routerLinkActive="bg-white/10"
+          class="flex items-center gap-3 px-3 py-2 rounded-md hover:bg-white/5"><i class="fas fa-boxes-stacked w-4"></i>
+          Product Insights</a></li>
+      <li><a routerLink="/dashboard/regional-performance" routerLinkActive="bg-white/10"
+          class="flex items-center gap-3 px-3 py-2 rounded-md hover:bg-white/5"><i
+            class="fas fa-map-marked-alt w-4"></i> Regional Performance</a></li>
+      <li><a routerLink="/dashboard/inventory-analysis" routerLinkActive="bg-white/10"
+          class="flex items-center gap-3 px-3 py-2 rounded-md hover:bg-white/5"><i class="fas fa-warehouse w-4"></i>
+          Inventory Analysis</a></li>
+    </ul>
+
+    <h3 class="text-xs text-yellow-300 uppercase tracking-wider mt-6 mb-2">Masters</h3>
+    <ul class="space-y-1">
+      <li><a routerLink="/products" routerLinkActive="bg-white/10"
+          class="flex items-center gap-3 px-3 py-2 rounded-md hover:bg-white/5"><i class="fas fa-box w-4"></i>
+          Products</a></li>
+      <li><a routerLink="/customers" routerLinkActive="bg-white/10"
+          class="flex items-center gap-3 px-3 py-2 rounded-md hover:bg-white/5"><i class="fas fa-users w-4"></i>
+          Customers</a></li>
+    </ul>
+    <h3 class="text-xs text-yellow-300 uppercase tracking-wider mt-6 mb-2">Engagement</h3>
+    <ul class="space-y-1">
+      <li><a routerLink="/dashboard/whatsapp-campaigns" routerLinkActive="bg-white/10"
+          class="flex items-center gap-3 px-3 py-2 rounded-md hover:bg-white/5"><i class="fab fa-whatsapp w-4"></i>
+          WhatsApp Campaigns <span class="ml-auto bg-red-500 text-white text-xs px-2 py-0.5 rounded-full">7</span></a>
+      </li>
+      <li><a routerLink="/dashboard/doctor-outreach" routerLinkActive="bg-white/10"
+          class="flex items-center gap-3 px-3 py-2 rounded-md hover:bg-white/5"><i class="fas fa-user-md w-4"></i>
+          Doctor Outreach</a></li>
+    </ul>
+
+
+    <div class="mt-6">
+      <button (click)="logout()"
+        class="w-full text-left px-3 py-2 rounded-md bg-white/5 hover:bg-red-500/20 text-red-200"><i
+          class="fas fa-sign-out-alt mr-2"></i> Logout</button>
+    </div>
+  </nav>
+</aside>
