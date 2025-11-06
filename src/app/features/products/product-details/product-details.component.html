@@ -95,43 +95,46 @@
   </section>
 
   <!-- ==================== Manufacturer Details ==================== -->
-  <section *ngIf="product?.manufacturer" class="bg-white border shadow rounded-xl p-6 mb-6">
-    <h3 class="text-lg font-semibold text-tati-burgundy mb-3 border-b border-gray-200 pb-2">Manufacturer Details</h3>
-    <div class="space-y-2 text-sm">
-      <p><span class="font-medium text-gray-700">Name:</span> <span class="text-gray-500">{{ product.manufacturer.manufacturerName || 'N/A' }}</span></p>
-      <p><span class="font-medium text-gray-700">MFG:</span> <span class="text-gray-500">{{ product.manufacturer.mfg || 'N/A' }}</span></p>
-      <p><span class="font-medium text-gray-700">Contact Person:</span> <span class="text-gray-500">{{ product.manufacturer.mfgPerson || 'N/A' }}</span></p>
-      <p><span class="font-medium text-gray-700">Email:</span> <span class="text-gray-500">{{ product.manufacturer.mfgEmail || 'N/A' }}</span></p>
-      <p><span class="font-medium text-gray-700">Mobile:</span> <span class="text-gray-500">{{ product.manufacturer.mfgMobile || 'N/A' }}</span></p>
-    </div>
-  </section>
+ <!-- ==================== Manufacturer Details ==================== -->
+<section *ngIf="product?.manufacturer" class="bg-white border shadow rounded-xl p-6 mb-6">
+  <h3 class="text-lg font-semibold text-tati-burgundy mb-3 border-b border-gray-200 pb-2">Manufacturer Details</h3>
+  <div class="space-y-2 text-sm">
+    <p><span class="font-medium text-gray-700">Name:</span> <span class="text-gray-500">{{ product?.manufacturer?.manufacturerName || 'N/A' }}</span></p>
+    <p><span class="font-medium text-gray-700">MFG:</span> <span class="text-gray-500">{{ product?.manufacturer?.mfg || 'N/A' }}</span></p>
+    <p><span class="font-medium text-gray-700">Contact Person:</span> <span class="text-gray-500">{{ product?.manufacturer?.mfgPerson || 'N/A' }}</span></p>
+    <p><span class="font-medium text-gray-700">Email:</span> <span class="text-gray-500">{{ product?.manufacturer?.mfgEmail || 'N/A' }}</span></p>
+    <p><span class="font-medium text-gray-700">Mobile:</span> <span class="text-gray-500">{{ product?.manufacturer?.mfgMobile || 'N/A' }}</span></p>
+  </div>
+</section>
 
+  <!-- ==================== Active Batches changes is done  ==================== -->
   <!-- ==================== Active Batches ==================== -->
-  <section *ngIf="product?.activeBatches?.length" class="bg-white rounded-xl shadow border-t-4 border-blue-500 mb-6">
-    <div class="p-6 border-b"><h3 class="font-semibold text-blue-600">Active Batches</h3></div>
-    <div class="overflow-x-auto">
-      <table class="w-full text-sm">
-        <thead class="bg-gray-100 text-gray-600 uppercase text-xs">
-          <tr>
-            <th class="px-6 py-3">Batch No</th>
-            <th class="px-6 py-3">Expiry Date</th>
-            <th class="px-6 py-3">Remaining Qty</th>
-            <th class="px-6 py-3">Status</th>
-          </tr>
-        </thead>
-        <tbody class="divide-y">
-          <tr *ngFor="let batch of product.activeBatches || []">  <!-- Added || [] - Fixes NG1 -->
-            <td class="px-6 py-3">{{ batch.batchNo }}</td>
-            <td class="px-6 py-3">{{ batch.expiryDate | date:'medium' }}</td>
-            <td class="px-6 py-3">{{ batch.remainingQty | number }}</td>
-            <td class="px-6 py-3" [ngClass]="batch.isExpiringSoon ? 'text-red-600' : 'text-green-600'">
-              {{ batch.isExpiringSoon ? 'Expiring Soon' : 'Active' }}
-            </td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
-  </section>
+<!-- ==================== Active Batches ==================== -->
+<section *ngIf="product?.activeBatches?.length" class="bg-white rounded-xl shadow border-t-4 border-blue-500 mb-6">
+  <div class="p-6 border-b"><h3 class="font-semibold text-blue-600">Active Batches</h3></div>
+  <div class="overflow-x-auto">
+    <table class="w-full text-sm">
+      <thead class="bg-gray-100 text-gray-600 uppercase text-xs">
+        <tr>
+          <th class="px-6 py-3">Batch No</th>
+          <th class="px-6 py-3">Expiry Date</th>
+          <th class="px-6 py-3">Remaining Qty</th>
+          <th class="px-6 py-3">Status</th>
+        </tr>
+      </thead>
+      <tbody class="divide-y">
+        <tr *ngFor="let batch of product.activeBatches">
+          <td class="px-6 py-3">{{ batch.batchNo }}</td>
+          <td class="px-6 py-3">{{ batch.expiryDate | date:'medium' }}</td>
+          <td class="px-6 py-3">{{ batch.remainingQty | number }}</td>
+          <td class="px-6 py-3" [ngClass]="batch.isExpiringSoon ? 'text-red-600' : 'text-green-600'">
+            {{ batch.isExpiringSoon ? 'Expiring Soon' : 'Active' }}
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</section>
 
   <!-- ==================== KPIs ==================== -->
   <section *ngIf="product" class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-6">

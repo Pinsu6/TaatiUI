@@ -109,7 +109,8 @@ export class ProductDetailsComponent {
       },
       options: { responsive: true, plugins: { legend: { position: 'bottom' } } }
     });
-    // ---- Regional Split (dummy) ----
+
+    //really 
     const rCtx = this.regionSplitRef.nativeElement.getContext('2d')!;
     this.regionChart = new Chart(rCtx, {
       type: 'doughnut',
