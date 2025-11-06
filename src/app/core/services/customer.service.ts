@@ -13,8 +13,8 @@ import { CustomerDetailDto } from '../../shared/models/customer-detail-dto.model
 })
 export class CustomerService {
 
-  private readonly apiUrl = 'https://localhost:44367/api/customer';
-  // private readonly apiUrl = 'https://api.tatipharma.com/api/customer';
+ // private readonly apiUrl = 'https://localhost:44367/api/customer';
+   private readonly apiUrl = 'https://api.tatipharma.com/api/customer';
     // GET /api/customer with query params
 
   constructor(private http: HttpClient) {}
