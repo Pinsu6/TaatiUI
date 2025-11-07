@@ -1,10 +1,13 @@
-
-import { AfterViewInit, Component, ElementRef, ViewChild } from '@angular/core';
+import { AfterViewInit, Component, ElementRef, ViewChild, OnInit, OnDestroy } from '@angular/core';
 import { Chart } from 'chart.js/auto';
 import * as L from 'leaflet';
 import { Pharmacy } from '../../../../shared/models/pharmacy.model';
 import { RefreshService } from '../../../../core/services/refresh.service';
-
+import { AnalyticsService } from '../../../../core/services/analytics.service';
+import { DashboardDto } from '../../../../shared/models/dashboard-dto.model';
+import { TopPharmacyDto } from '../../../../shared/models/top-pharmacy-dto.model';
+import { Subject } from 'rxjs';
+import { takeUntil } from 'rxjs/operators';
 
 @Component({
   selector: 'app-dashboard',
@@ -12,142 +15,297 @@ import { RefreshService } from '../../../../core/services/refresh.service';
   templateUrl: './dashboard.component.html',
   styleUrl: './dashboard.component.css'
 })
-export class DashboardComponent implements AfterViewInit{
+export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
   @ViewChild('salesChart') salesChartRef!: ElementRef<HTMLCanvasElement>;
   @ViewChild('categoriesChart') categoriesChartRef!: ElementRef<HTMLCanvasElement>;
   @ViewChild('map') mapRef!: ElementRef<HTMLDivElement>;
   private salesChart!: Chart;
   private categoriesChart!: Chart;
+  private map!: L.Map;
+  private destroy$ = new Subject<void>();
 
-  pharmacies: Pharmacy[] = [
-    { name: 'Alpha Pharmacy', lat: 8.4657, lon: -13.2317, revenue: 4200000 },
-    { name: 'Beta Pharmacy', lat: 7.9640, lon: -11.7389, revenue: 3800000 },
-    { name: 'Gamma Pharmacy', lat: 8.9450, lon: -11.4250, revenue: 3200000 },
-    { name: 'Delta Pharmacy', lat: 7.8790, lon: -11.0810, revenue: 2750000 },
-  ];
+  dashboardData!: DashboardDto;
+  pharmacies: Pharmacy[] = [];
+  
+  loading = true;
+  error: string | null = null;
 
-  constructor(private refreshService: RefreshService) {
-    this.refreshService.refresh$.subscribe(() => this.refreshCharts());
+  // KPI values
+  totalSalesYtd = 0;
+  salesGrowth = 0;
+  activePharmacies = 0;
+  totalCustomers = 0;
+  orderFulfillment = 0;
+  fulfillmentChange = 0;
+
+  constructor(
+    private refreshService: RefreshService,
+    private analyticsService: AnalyticsService
+  ) {
+    this.refreshService.refresh$.subscribe(() => {
+      if (!this.loading) {
+        this.loadDashboard();
+      }
+    });
+  }
+
+  ngOnInit() {
+    this.loadDashboard();
+  }
+
+  ngOnDestroy() {
+    this.destroy$.next();
+    this.destroy$.complete();
+    if (this.map) {
+      this.map.remove();
+    }
+    if (this.salesChart) {
+      this.salesChart.destroy();
+    }
+    if (this.categoriesChart) {
+      this.categoriesChart.destroy();
+    }
+  }
+
+  loadDashboard() {
+    this.loading = true;
+    this.error = null;
+    this.analyticsService.getDashboard()
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (data) => {
+          this.dashboardData = data;
+          this.updateKPIs(data);
+          this.updatePharmacies(data);
+          this.loading = false;
+          // Initialize charts after data is loaded
+          setTimeout(() => {
+            this.initializeChartsWhenReady();
+          }, 100);
+        },
+        error: (err) => {
+          this.error = err.message || 'Failed to load dashboard data';
+          this.loading = false;
+          console.error('Error loading dashboard:', err);
+        }
+      });
+  }
+
+  private updateKPIs(data: DashboardDto) {
+    this.totalSalesYtd = data.kpis.totalSalesYtd;
+    this.salesGrowth = data.kpis.salesGrowth;
+    this.activePharmacies = data.kpis.activePharmacies;
+    this.totalCustomers = data.kpis.totalCustomers;
+    this.orderFulfillment = data.kpis.orderFulfillment;
+    this.fulfillmentChange = data.kpis.fulfillmentChange;
+  }
+
+  private updatePharmacies(data: DashboardDto) {
+    // Convert TopPharmacyDto to Pharmacy model
+    // Note: We don't have lat/lon in the API response, so we'll use default coordinates
+    // In a real scenario, you'd need to geocode the regions or have coordinates in the API
+    this.pharmacies = data.topPharmacies.map((pharmacy, index) => ({
+      name: pharmacy.name,
+      region: pharmacy.region,
+      revenue: pharmacy.revenue,
+      // Default coordinates for Sierra Leone - in production, you'd geocode these
+      lat: 8.4657 + (index * 0.1),
+      lon: -13.2317 + (index * 0.1)
+    }));
   }
 
   ngAfterViewInit() {
-    console.log('Sales Chart Ref:', this.salesChartRef);
-    console.log('Categories Chart Ref:', this.categoriesChartRef);
-    // Sales Chart
-    const months = (() => {
-      const m = [];
-      const d = new Date();
-      d.setMonth(d.getMonth() - 11);
-      for (let i = 0; i < 12; i++) {
-        m.push(d.toLocaleString('default', { month: 'short', year: 'numeric' }));
-        d.setMonth(d.getMonth() + 1);
-      }
-      return m;
-    })();
+    // If data is already loaded, initialize charts
+    if (this.dashboardData && !this.loading) {
+      this.initializeChartsWhenReady();
+    }
+  }
 
+  private initializeChartsWhenReady(attempts = 0) {
+    const maxAttempts = 10;
+    if (this.salesChartRef && this.categoriesChartRef && this.mapRef && this.dashboardData) {
+      this.initializeCharts();
+      this.initializeMap();
+    } else if (attempts < maxAttempts) {
+      setTimeout(() => {
+        this.initializeChartsWhenReady(attempts + 1);
+      }, 50);
+    } else {
+      console.warn('Chart/Map initialization failed: ViewChild references not available');
+    }
+  }
+
+  private initializeCharts() {
+    if (!this.salesChartRef || !this.categoriesChartRef || !this.dashboardData) {
+      return;
+    }
+
+    // Destroy existing charts if they exist
+    if (this.salesChart) {
+      this.salesChart.destroy();
+    }
+    if (this.categoriesChart) {
+      this.categoriesChart.destroy();
+    }
+
+    // Revenue Performance Chart
     const salesCtx = this.salesChartRef.nativeElement.getContext('2d');
+    if (salesCtx && this.dashboardData.revenuePerformance) {
+      const revenueData = this.dashboardData.revenuePerformance;
+      const labels = revenueData.map(item => item.month);
+      const retailData = revenueData.map(item => item.retail);
+      const wholesaleData = revenueData.map(item => item.wholesale);
 
-    this.salesChart = new Chart(salesCtx!, {
-      type: 'line',
-      data: {
-        labels: months,
-        datasets: [
-          {
-            label: 'Retail Sales',
-            data: [420000, 380000, 410000, 450000, 470000, 520000, 580000, 600000, 620000, 640000, 700000, 740000],
-            borderWidth: 2,
-            tension: 0.3,
-            fill: true,
-            backgroundColor: (ctx: any) => {
-              const gradient = ctx.chart.ctx.createLinearGradient(0, 0, 0, 400);
-              gradient.addColorStop(0, 'rgba(139,21,56,0.25)');
-              gradient.addColorStop(1, 'rgba(139,21,56,0)');
-              return gradient;
+      this.salesChart = new Chart(salesCtx, {
+        type: 'line',
+        data: {
+          labels: labels,
+          datasets: [
+            {
+              label: 'Retail Sales',
+              data: retailData,
+              borderWidth: 2,
+              tension: 0.3,
+              fill: true,
+              backgroundColor: (ctx: any) => {
+                const gradient = ctx.chart.ctx.createLinearGradient(0, 0, 0, 400);
+                gradient.addColorStop(0, 'rgba(139,21,56,0.25)');
+                gradient.addColorStop(1, 'rgba(139,21,56,0)');
+                return gradient;
+              },
+              borderColor: '#8B1538',
+              pointRadius: 3
             },
-            borderColor: '#8B1538',
-            pointRadius: 3
-          },
-          {
-            label: 'Wholesale Sales',
-            data: [300000, 320000, 310000, 340000, 360000, 380000, 410000, 420000, 430000, 450000, 470000, 490000],
-            borderWidth: 2,
-            tension: 0.3,
-            borderColor: '#F59E0B',
-            backgroundColor: (ctx: any) => {
-              const g = ctx.chart.ctx.createLinearGradient(0, 0, 0, 400);
-              g.addColorStop(0, 'rgba(245,158,11,0.18)');
-              g.addColorStop(1, 'rgba(245,158,11,0)');
-              return g;
-            },
-            pointRadius: 2
-          }
-        ]
-      },
-      options: {
-        responsive: true,
-        plugins: { legend: { position: 'top' } },
-        scales: {
-          y: {
-            beginAtZero: false,
-            ticks: {
-              callback: function(value:any) { return value >= 1000 ? value.toLocaleString() : value; }
+            {
+              label: 'Wholesale Sales',
+              data: wholesaleData,
+              borderWidth: 2,
+              tension: 0.3,
+              borderColor: '#F59E0B',
+              backgroundColor: (ctx: any) => {
+                const g = ctx.chart.ctx.createLinearGradient(0, 0, 0, 400);
+                g.addColorStop(0, 'rgba(245,158,11,0.18)');
+                g.addColorStop(1, 'rgba(245,158,11,0)');
+                return g;
+              },
+              pointRadius: 2
+            }
+          ]
+        },
+        options: {
+          responsive: true,
+          plugins: { legend: { position: 'top' } },
+          scales: {
+            y: {
+              beginAtZero: false,
+              ticks: {
+                callback: function(value: any) { return value >= 1000 ? value.toLocaleString() : value; }
+              }
             }
           }
         }
-      }
-    });
+      });
+    }
 
-    // Categories Chart
+    // Product Categories Chart
     const categoriesCtx = this.categoriesChartRef.nativeElement.getContext('2d');
-    
-    this.categoriesChart = new Chart(categoriesCtx!, {
-      type: 'doughnut',
-      data: {
-        labels: ['Antibiotics', 'Pain Relief', 'Vitamins', 'Cough & Cold', 'Others'],
-        datasets: [{
-          data: [38, 24, 16, 12, 10],
-          hoverOffset: 6,
-          backgroundColor: ['#8B1538', '#D4AF37', '#10B981', '#7C3AED', '#F97316']
-        }]
-      },
-      options: {
-        responsive: true,
-        plugins: { legend: { position: 'bottom' } }
-      }
-    });
+    if (categoriesCtx && this.dashboardData.productCategories) {
+      const categories = this.dashboardData.productCategories;
+      const labels = categories.map(item => item.category || 'Uncategorized');
+      const shareData = categories.map(item => item.share);
 
-    // Leaflet Map
-    const map = L.map(this.mapRef.nativeElement, { zoomControl: true }).setView([8.4844, -13.2344], 7);
+      const colors = ['#8B1538', '#D4AF37', '#10B981', '#7C3AED', '#F97316', '#8B5CF6', '#EC4899', '#14B8A6'];
+      const backgroundColor = labels.map((_, index) => colors[index % colors.length]);
+
+      this.categoriesChart = new Chart(categoriesCtx, {
+        type: 'doughnut',
+        data: {
+          labels: labels,
+          datasets: [{
+            data: shareData,
+            hoverOffset: 6,
+            backgroundColor: backgroundColor
+          }]
+        },
+        options: {
+          responsive: true,
+          plugins: { legend: { position: 'bottom' } }
+        }
+      });
+    }
+  }
+
+  private initializeMap() {
+    if (!this.mapRef || !this.dashboardData) {
+      return;
+    }
+
+    // Remove existing map if it exists
+    if (this.map) {
+      this.map.remove();
+    }
+
+    // Initialize Leaflet Map
+    this.map = L.map(this.mapRef.nativeElement, { zoomControl: true }).setView([8.4844, -13.2344], 7);
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
       attribution: '© OpenStreetMap contributors'
-    }).addTo(map);
+    }).addTo(this.map);
 
-    this.pharmacies.forEach(p => {
-      const marker = L.circleMarker([p.lat, p.lon], { radius: 8, fillColor: '#8B1538', color: '#fff', weight: 1, fillOpacity: 0.9 }).addTo(map);
-      marker.bindPopup(`<strong>${p.name}</strong><br/>Revenue: SLL ${p.revenue.toLocaleString()}`);
-    });
+    // Add markers for top pharmacies or regional performance
+    if (this.dashboardData.regionalPerformance && this.dashboardData.regionalPerformance.length > 0) {
+      // Use regional performance data for map markers
+      this.dashboardData.regionalPerformance.forEach((region, index) => {
+        // Default coordinates - in production, you'd geocode the region names
+        const lat = 8.4657 + (index * 0.2);
+        const lon = -13.2317 + (index * 0.2);
+        const marker = L.circleMarker([lat, lon], {
+          radius: 8,
+          fillColor: '#8B1538',
+          color: '#fff',
+          weight: 1,
+          fillOpacity: 0.9
+        }).addTo(this.map);
+        marker.bindPopup(`<strong>${region.region}</strong><br/>Revenue: SLL ${region.revenue.toLocaleString()}`);
+      });
+    } else if (this.pharmacies.length > 0) {
+      // Fallback to pharmacies if regional data is not available
+      this.pharmacies.forEach(p => {
+        const marker = L.circleMarker([p.lat, p.lon], {
+          radius: 8,
+          fillColor: '#8B1538',
+          color: '#fff',
+          weight: 1,
+          fillOpacity: 0.9
+        }).addTo(this.map);
+        marker.bindPopup(`<strong>${p.name}</strong><br/>Revenue: SLL ${p.revenue.toLocaleString()}`);
+      });
+    }
   }
 
   refreshCharts() {
-    this.salesChart.data.datasets.forEach(ds => {
-      const lastIndex = ds.data.length - 1;
-      const jitter = Math.round((Math.random() - 0.5) * 50000);
-      ds.data[lastIndex] = Math.max(10000, (ds.data[lastIndex] as number) + jitter);
-    });
-    this.salesChart.update();
+    // Reload dashboard data instead of just updating charts
+    this.loadDashboard();
+  }
 
-    this.categoriesChart.data.datasets[0].data = this.categoriesChart.data.datasets[0].data.map(v => Math.max(5, v? + Math.round((Math.random() - 0.5) * 4) :0));
-    this.categoriesChart.update();
+  formatCurrency(value: number): string {
+    if (value >= 1000000) {
+      return `SLL ${(value / 1000000).toFixed(1)}M`;
+    } else if (value >= 1000) {
+      return `SLL ${(value / 1000).toFixed(1)}K`;
+    }
+    return `SLL ${value.toLocaleString()}`;
+  }
 
-    // Optional: Trigger map marker bounce or refresh (simplified)
-    const map = L.map(this.mapRef.nativeElement);
-    // setTimeout(() => {
-    //   map.eachLayer(layer => {
-    //     if (layer instanceof L.Marker) {
-    //       layer.openPopup();
-    //       return false;
-    //     }
-    //   });
-    // }, 600);
+  formatGrowth(value: number): string {
+    if (value > 0) {
+      return `+${value.toFixed(1)}%`;
+    } else if (value < 0) {
+      return `${value.toFixed(1)}%`;
+    }
+    return '0%';
+  }
+
+  formatFulfillment(value: number): string {
+    return `${value.toFixed(1)}%`;
   }
 }
