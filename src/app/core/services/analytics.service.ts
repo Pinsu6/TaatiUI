@@ -11,7 +11,9 @@ import { InventoryAnalyticsDto } from '../../shared/models/inventory-analytics-d
   providedIn: 'root'
 })
 export class AnalyticsService {
-  private readonly apiUrl = 'http://localhost:5272/api/Analytics';
+  private readonly apiUrl = 'https://localhost:44367/api/Analytics';
+  // private readonly apiUrl = 'http://localhost:5272/api/Analytics';
+   //private readonly apiUrl = 'https://api.tatipharma.com/api/customer';
 
   constructor(private http: HttpClient) {}
 

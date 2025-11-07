@@ -12,7 +12,9 @@ import { debounceTime, Subject, Subscription } from 'rxjs';
   styleUrl: './customers.component.css'
 })
 export class CustomersComponent {
+  lastUpdate: string = new Date().toLocaleString('en-GB', { day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit' });
   searchQuery: string = '';
+  showExportModal = false;
   selectedStatus: string = 'all';
   customers: Customer[] = [];
   isLoading: boolean = true;
@@ -41,6 +43,22 @@ export class CustomersComponent {
     this.loadCustomers();
   }
 
+  openExportModal() { this.showExportModal = true; }
+  closeExportModal() { this.showExportModal = false; }
+
+  export(format: 'pdf' | 'excel' | 'csv') {
+    const isActive = this.selectedStatus === 'active' ? true :
+                     this.selectedStatus === 'inactive' ? false : undefined;
+
+    const payload = {
+      search: this.searchQuery || undefined,
+      isActive,
+      pageNumber: this.pageNumber,
+      pageSize: this.pageSize
+    };
+
+    
+  }
   ngOnDestroy(): void {
     this.subscriptions.unsubscribe();
   }
