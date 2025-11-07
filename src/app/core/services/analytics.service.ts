@@ -6,6 +6,7 @@ import { ApiResponse } from '../../shared/models/api-response.model';
 import { AnalyticsDto } from '../../shared/models/analytics-dto.model';
 import { ProductInsightsDto } from '../../shared/models/product-insights-dto.model';
 import { InventoryAnalyticsDto } from '../../shared/models/inventory-analytics-dto.model';
+import { DashboardDto } from '../../shared/models/dashboard-dto.model';
 
 @Injectable({
   providedIn: 'root'
@@ -51,6 +52,20 @@ export class AnalyticsService {
             return response.data;
           } else {
             throw new Error(response.message || 'Failed to fetch inventory analytics');
+          }
+        }),
+        catchError(this.handleError)
+      );
+  }
+
+  getDashboard(): Observable<DashboardDto> {
+    return this.http.get<ApiResponse<DashboardDto>>(`${this.apiUrl}/dashboard`)
+      .pipe(
+        map(response => {
+          if (response.success && response.data) {
+            return response.data;
+          } else {
+            throw new Error(response.message || 'Failed to fetch dashboard data');
           }
         }),
         catchError(this.handleError)

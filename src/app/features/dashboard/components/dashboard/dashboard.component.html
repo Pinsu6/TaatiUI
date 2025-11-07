@@ -1,64 +1,87 @@
 <section id="dashboard" class="page-section active space-y-6">
-  <!-- KPIs -->
-  <div class="flex flex-col lg:flex-row gap-6">
-    <div class="bg-white rounded-xl p-6 shadow flex-1 border-t-4 border-tati-burgundy">
-      <div class="flex justify-between items-start">
-        <div class="flex items-center gap-4">
-          <div
-            class="w-12 h-12 rounded-lg bg-gradient-to-r from-[#8B1538] to-[#6B0E2B] flex items-center justify-center text-white">
-            <i class="fas fa-dollar-sign"></i></div>
-          <div>
-            <div class="text-2xl font-bold text-tati-burgundy">SLL 18.7M</div>
-            <div class="text-sm text-gray-500">Total Sales YTD</div>
-          </div>
-        </div>
-        <div class="text-green-600 font-semibold flex items-center gap-2"><i class="fas fa-arrow-up"></i> +22%</div>
-      </div>
-      <div class="mt-4 text-sm text-gray-600">Compared to last quarter</div>
-    </div>
-    <div class="bg-white rounded-xl p-6 shadow flex-1 border-t-4 border-yellow-400">
-      <div class="flex justify-between items-start">
-        <div class="flex items-center gap-4">
-          <div
-            class="w-12 h-12 rounded-lg bg-gradient-to-r from-yellow-400 to-yellow-500 flex items-center justify-center text-white">
-            <i class="fas fa-store"></i></div>
-          <div>
-            <div class="text-2xl font-bold text-tati-burgundy">342</div>
-            <div class="text-sm text-gray-500">Active Pharmacies</div>
-          </div>
-        </div>
-        <div class="text-green-600 font-semibold flex items-center gap-2"><i class="fas fa-plus"></i> +18</div>
-      </div>
-    </div>
-    <div class="bg-white rounded-xl p-6 shadow flex-1 border-t-4 border-[#6B0E2B]">
-      <div class="flex justify-between items-start">
-        <div class="flex items-center gap-4">
-          <div
-            class="w-12 h-12 rounded-lg bg-gradient-to-r from-[#6B0E2B] to-[#8B1538] flex items-center justify-center text-white">
-            <i class="fas fa-users"></i></div>
-          <div>
-            <div class="text-2xl font-bold text-tati-burgundy">1,245</div>
-            <div class="text-sm text-gray-500">Total Customers</div>
-          </div>
-        </div>
-        <div class="text-green-600 font-semibold flex items-center gap-2"><i class="fas fa-arrow-up"></i> +15%</div>
-      </div>
-    </div>
-    <div class="bg-white rounded-xl p-6 shadow flex-1 border-t-4 border-tati-gold">
-      <div class="flex justify-between items-start">
-        <div class="flex items-center gap-4">
-          <div
-            class="w-12 h-12 rounded-lg bg-gradient-to-r from-[#D4AF37] to-[#FBBF24] flex items-center justify-center text-white">
-            <i class="fas fa-chart-line"></i></div>
-          <div>
-            <div class="text-2xl font-bold text-tati-burgundy">87%</div>
-            <div class="text-sm text-gray-500">Order Fulfillment</div>
-          </div>
-        </div>
-        <div class="text-red-600 font-semibold flex items-center gap-2"><i class="fas fa-arrow-down"></i> -3%</div>
-      </div>
+  <!-- Loading State -->
+  <div *ngIf="loading" class="flex justify-center items-center min-h-[400px]">
+    <div class="text-center">
+      <i class="fas fa-spinner fa-spin text-4xl text-tati-burgundy mb-4"></i>
+      <p class="text-gray-600">Loading dashboard data...</p>
     </div>
   </div>
+
+  <!-- Error State -->
+  <div *ngIf="error && !loading" class="bg-red-50 border border-red-200 rounded-lg p-4">
+    <div class="flex items-center">
+      <i class="fas fa-exclamation-circle text-red-500 mr-2"></i>
+      <p class="text-red-700">{{ error }}</p>
+      <button (click)="loadDashboard()" class="ml-4 px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600">
+        <i class="fas fa-redo mr-2"></i> Retry
+      </button>
+    </div>
+  </div>
+
+  <!-- Content -->
+  <div *ngIf="!loading && !error">
+    <!-- KPIs -->
+    <div class="flex flex-col lg:flex-row gap-6">
+      <div class="bg-white rounded-xl p-6 shadow flex-1 border-t-4 border-tati-burgundy">
+        <div class="flex justify-between items-start">
+          <div class="flex items-center gap-4">
+            <div
+              class="w-12 h-12 rounded-lg bg-gradient-to-r from-[#8B1538] to-[#6B0E2B] flex items-center justify-center text-white">
+              <i class="fas fa-dollar-sign"></i></div>
+            <div>
+              <div class="text-2xl font-bold text-tati-burgundy">{{ formatCurrency(totalSalesYtd) }}</div>
+              <div class="text-sm text-gray-500">Total Sales YTD</div>
+            </div>
+          </div>
+          <div [ngClass]="salesGrowth >= 0 ? 'text-green-600' : 'text-red-600'" class="font-semibold flex items-center gap-2">
+            <i [ngClass]="salesGrowth >= 0 ? 'fa-arrow-up' : 'fa-arrow-down'" class="fas"></i> {{ formatGrowth(salesGrowth) }}
+          </div>
+        </div>
+        <div class="mt-4 text-sm text-gray-600">Compared to last quarter</div>
+      </div>
+      <div class="bg-white rounded-xl p-6 shadow flex-1 border-t-4 border-yellow-400">
+        <div class="flex justify-between items-start">
+          <div class="flex items-center gap-4">
+            <div
+              class="w-12 h-12 rounded-lg bg-gradient-to-r from-yellow-400 to-yellow-500 flex items-center justify-center text-white">
+              <i class="fas fa-store"></i></div>
+            <div>
+              <div class="text-2xl font-bold text-tati-burgundy">{{ activePharmacies }}</div>
+              <div class="text-sm text-gray-500">Active Pharmacies</div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="bg-white rounded-xl p-6 shadow flex-1 border-t-4 border-[#6B0E2B]">
+        <div class="flex justify-between items-start">
+          <div class="flex items-center gap-4">
+            <div
+              class="w-12 h-12 rounded-lg bg-gradient-to-r from-[#6B0E2B] to-[#8B1538] flex items-center justify-center text-white">
+              <i class="fas fa-users"></i></div>
+            <div>
+              <div class="text-2xl font-bold text-tati-burgundy">{{ totalCustomers.toLocaleString() }}</div>
+              <div class="text-sm text-gray-500">Total Customers</div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="bg-white rounded-xl p-6 shadow flex-1 border-t-4 border-tati-gold">
+        <div class="flex justify-between items-start">
+          <div class="flex items-center gap-4">
+            <div
+              class="w-12 h-12 rounded-lg bg-gradient-to-r from-[#D4AF37] to-[#FBBF24] flex items-center justify-center text-white">
+              <i class="fas fa-chart-line"></i></div>
+            <div>
+              <div class="text-2xl font-bold text-tati-burgundy">{{ formatFulfillment(orderFulfillment) }}</div>
+              <div class="text-sm text-gray-500">Order Fulfillment</div>
+            </div>
+          </div>
+          <div [ngClass]="fulfillmentChange >= 0 ? 'text-green-600' : 'text-red-600'" class="font-semibold flex items-center gap-2">
+            <i [ngClass]="fulfillmentChange >= 0 ? 'fa-arrow-up' : 'fa-arrow-down'" class="fas"></i> {{ formatGrowth(fulfillmentChange) }}
+          </div>
+        </div>
+      </div>
+    </div>
 
   <!-- Filter Bar -->
   <div class="bg-white p-4 rounded-xl shadow flex flex-col md:flex-row gap-3 items-center">
@@ -139,14 +162,18 @@
             </tr>
           </thead>
           <tbody class="divide-y">
-            <tr *ngFor="let p of pharmacies">
+            <tr *ngFor="let p of pharmacies" class="hover:bg-gray-50">
               <td class="py-2 font-medium">{{ p.name }}</td>
-              <td class="py-2">{{ p.region || 'Freetown' }}</td> <!-- Updated to use region or fallback -->
-              <td class="py-2">{{ p.revenue.toLocaleString() }}</td>
+              <td class="py-2">{{ p.region || 'N/A' }}</td>
+              <td class="py-2">{{ formatCurrency(p.revenue) }}</td>
+            </tr>
+            <tr *ngIf="pharmacies.length === 0">
+              <td colspan="3" class="py-4 text-center text-gray-500">No pharmacy data available</td>
             </tr>
           </tbody>
         </table>
       </div>
     </div>
+  </div>
   </div>
 </section>
