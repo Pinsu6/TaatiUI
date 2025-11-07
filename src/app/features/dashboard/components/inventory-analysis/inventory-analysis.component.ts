@@ -2,6 +2,7 @@ import { Component, ElementRef, ViewChild, OnInit, OnDestroy } from '@angular/co
 import { Router } from '@angular/router';
 import { Chart } from 'chart.js/auto';
 import { AnalyticsService } from '../../../../core/services/analytics.service';
+import { ModalService } from '../../../../core/services/modal.service';
 import { InventoryAnalyticsDto } from '../../../../shared/models/inventory-analytics-dto.model';
 import { StockAlert } from '../../../../shared/models/stock-alert.model';
 import { Subject } from 'rxjs';
@@ -34,7 +35,8 @@ export class InventoryAnalysisComponent implements OnInit, OnDestroy {
 
   constructor(
     private router: Router,
-    private analyticsService: AnalyticsService
+    private analyticsService: AnalyticsService,
+    private modalService: ModalService
   ) {}
 
   ngOnInit() {
@@ -72,6 +74,14 @@ export class InventoryAnalysisComponent implements OnInit, OnDestroy {
           console.error('Error loading inventory analytics:', err);
         }
       });
+  }
+
+  refresh() {
+    this.loadInventoryAnalytics();
+  }
+
+  openExportModal() {
+    this.modalService.openExportModal();
   }
 
   private updateKPIs(data: InventoryAnalyticsDto) {

@@ -13,7 +13,7 @@ import { ProductDetailDto } from '../../shared/models/product-detail-dto.model';
 })
 export class ProductService {
 
- private apiUrl = 'https://localhost:44367/api/products';
+ private apiUrl = 'http://localhost:5272/api/products';
   // private apiUrl = 'http://localhost:5272/api/products';
   // private apiUrl = 'https://api.tatipharma.com/api/products';
   

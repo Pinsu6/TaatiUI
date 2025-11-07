@@ -12,7 +12,7 @@ import { ApiResponse } from '../../shared/models/api-response.model';
 })
 export class AuthService {
 
- private readonly apiUrl = 'https://localhost:44367/api/auth';
+ private readonly apiUrl = 'http://localhost:5272/api/auth';
   // private readonly apiUrl = 'http://localhost:5272/api/auth';
  // private readonly apiUrl = 'https://api.tatipharma.com/api/auth'; // Base API URL
   

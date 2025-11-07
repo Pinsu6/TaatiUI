@@ -2,6 +2,7 @@ import { Component, ElementRef, ViewChild, OnInit, OnDestroy } from '@angular/co
 import { Chart } from 'chart.js/auto';
 import { Router } from '@angular/router';
 import { AnalyticsService } from '../../../../core/services/analytics.service';
+import { ModalService } from '../../../../core/services/modal.service';
 import { ProductInsightsDto } from '../../../../shared/models/product-insights-dto.model';
 import { ProductInsightDto } from '../../../../shared/models/product-insight-dto.model';
 import { AIRecommendation } from '../../../../shared/models/ai-recommendation.model';
@@ -39,7 +40,8 @@ export class ProductInsightsComponent implements OnInit, OnDestroy {
 
   constructor(
     private router: Router,
-    private analyticsService: AnalyticsService
+    private analyticsService: AnalyticsService,
+    private modalService: ModalService
   ) {}
 
   ngOnInit() {
@@ -78,6 +80,14 @@ export class ProductInsightsComponent implements OnInit, OnDestroy {
           console.error('Error loading product insights:', err);
         }
       });
+  }
+
+  refresh() {
+    this.loadProductInsights();
+  }
+
+  openExportModal() {
+    this.modalService.openExportModal();
   }
 
   private updateKPIs(data: ProductInsightsDto) {
