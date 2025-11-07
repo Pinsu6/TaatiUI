@@ -15,6 +15,8 @@ export class CustomersComponent {
   lastUpdate: string = new Date().toLocaleString('en-GB', { day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit' });
   searchQuery: string = '';
   showExportModal = false;
+  isExporting = false;
+  exportErrorMessage: string | null = null;
   selectedStatus: string = 'all';
   customers: Customer[] = [];
   isLoading: boolean = true;
@@ -44,20 +46,54 @@ export class CustomersComponent {
   }
 
   openExportModal() { this.showExportModal = true; }
-  closeExportModal() { this.showExportModal = false; }
+  closeExportModal() {
+    this.showExportModal = false;
+    this.isExporting = false;
+    this.exportErrorMessage = null;
+  }
 
   export(format: 'pdf' | 'excel' | 'csv') {
+    if (format === 'pdf') {
+      this.exportErrorMessage = 'PDF export is not available yet.';
+      return;
+    }
+
     const isActive = this.selectedStatus === 'active' ? true :
-                     this.selectedStatus === 'inactive' ? false : undefined;
+      this.selectedStatus === 'inactive' ? false : undefined;
 
     const payload = {
-      search: this.searchQuery || undefined,
-      isActive,
-      pageNumber: this.pageNumber,
-      pageSize: this.pageSize
+      pageNumber: 2147483647,
+      pageSize: 100,
+      search: this.searchQuery || 'string',
+      isActive: isActive ?? true
     };
 
-    
+    this.isExporting = true;
+    this.exportErrorMessage = null;
+
+    this.customerService.exportCustomers(format, payload).subscribe({
+      next: (blob) => {
+        this.downloadFile(blob, format);
+        this.isExporting = false;
+        this.closeExportModal();
+      },
+      error: (error) => {
+        this.exportErrorMessage = error.message || 'Failed to export customers.';
+        this.isExporting = false;
+      }
+    });
+  }
+
+  private downloadFile(blob: Blob, format: 'excel' | 'csv'): void {
+    const extension = format === 'excel' ? 'xlsx' : 'csv';
+    const fileName = `customers-${new Date().toISOString()}.${extension}`;
+
+    const url = window.URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = fileName;
+    link.click();
+    window.URL.revokeObjectURL(url);
   }
   ngOnDestroy(): void {
     this.subscriptions.unsubscribe();

@@ -162,15 +162,25 @@
       <h3 class="font-semibold text-lg text-tati-burgundy mb-3">Export Customers</h3>
       <p class="text-sm text-gray-600 mb-4">Choose a format and download the current list.</p>
       <div class="flex gap-3">
-        <button class="flex-1 px-4 py-2 border rounded-md hover:bg-gray-50"
+        <button class="flex-1 px-4 py-2 border rounded-md hover:bg-gray-50 disabled:opacity-50"
+                [disabled]="isExporting"
                 (click)="export('pdf')">PDF</button>
-        <button class="flex-1 px-4 py-2 border rounded-md hover:bg-gray-50"
+        <button class="flex-1 px-4 py-2 border rounded-md hover:bg-gray-50 disabled:opacity-50"
+                [disabled]="isExporting"
                 (click)="export('excel')">Excel</button>
-        <button class="flex-1 px-4 py-2 border rounded-md hover:bg-gray-50"
+        <button class="flex-1 px-4 py-2 border rounded-md hover:bg-gray-50 disabled:opacity-50"
+                [disabled]="isExporting"
                 (click)="export('csv')">CSV</button>
       </div>
+      <div *ngIf="isExporting" class="mt-4 flex items-center gap-2 text-sm text-gray-600">
+        <i class="fas fa-spinner fa-spin"></i>
+        <span>Preparing your download...</span>
+      </div>
+      <div *ngIf="exportErrorMessage" class="mt-4 text-sm text-red-600">
+        {{ exportErrorMessage }}
+      </div>
       <div class="mt-4 text-right">
-        <button (click)="closeExportModal()" class="px-4 py-2 text-sm text-gray-600">Close</button>
+        <button (click)="closeExportModal()" class="px-4 py-2 text-sm text-gray-600" [disabled]="isExporting">Close</button>
       </div>
     </div>
   </div>

@@ -105,6 +105,13 @@ export class CustomerService {
     return throwError(() => new Error(errorMsg));
   }
 
+  exportCustomers(format: 'excel' | 'csv', payload: { pageNumber: number; pageSize: number; search: string; isActive: boolean }): Observable<Blob> {
+    const url = `${this.apiUrl}/export/${format}`;
+    return this.http.post(url, payload, { responseType: 'blob' }).pipe(
+      catchError(this.handleError)
+    );
+  }
+
   getById(id: number): Observable<CustomerDetailDto> {
   return this.http.get<ApiResponse<CustomerDetailDto>>(`${this.apiUrl}/${id}`)
     .pipe(
