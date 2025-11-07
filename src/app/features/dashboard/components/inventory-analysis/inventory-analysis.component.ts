@@ -1,7 +1,11 @@
-import { Component, ElementRef, ViewChild } from '@angular/core';
+import { Component, ElementRef, ViewChild, OnInit, OnDestroy } from '@angular/core';
 import { Router } from '@angular/router';
 import { Chart } from 'chart.js/auto';
+import { AnalyticsService } from '../../../../core/services/analytics.service';
+import { InventoryAnalyticsDto } from '../../../../shared/models/inventory-analytics-dto.model';
 import { StockAlert } from '../../../../shared/models/stock-alert.model';
+import { Subject } from 'rxjs';
+import { takeUntil } from 'rxjs/operators';
 
 @Component({
   selector: 'app-inventory-analysis',
@@ -9,60 +13,199 @@ import { StockAlert } from '../../../../shared/models/stock-alert.model';
   templateUrl: './inventory-analysis.component.html',
   styleUrl: './inventory-analysis.component.css'
 })
-export class InventoryAnalysisComponent {
+export class InventoryAnalysisComponent implements OnInit, OnDestroy {
   @ViewChild('categoryChart') categoryChartRef!: ElementRef<HTMLCanvasElement>;
   @ViewChild('turnoverChart') turnoverChartRef!: ElementRef<HTMLCanvasElement>;
   private categoryChart!: Chart;
   private turnoverChart!: Chart;
+  private destroy$ = new Subject<void>();
 
-  stockAlerts: StockAlert[] = [
-    { product: 'Amoxicillin', category: 'Antibiotic', currentStock: 0, status: 'Stock-Out' },
-    { product: 'Paracetamol', category: 'Pain Relief', currentStock: 12000, status: 'Overstock' },
-    { product: 'Vitamin C', category: 'Vitamins', currentStock: 250, status: 'Low Stock' },
-    { product: 'Ibuprofen', category: 'Pain Relief', currentStock: 35, status: 'Low Stock' }
-  ];
+  inventoryAnalyticsData!: InventoryAnalyticsDto;
+  stockAlerts: StockAlert[] = [];
+  
+  loading = true;
+  error: string | null = null;
 
-  constructor(private router: Router) {}
+  // KPI values
+  totalStockValue = 0;
+  stockOuts = 0;
+  overstockAlerts = 0;
+  avgTurnover = 0;
+
+  constructor(
+    private router: Router,
+    private analyticsService: AnalyticsService
+  ) {}
+
+  ngOnInit() {
+    this.loadInventoryAnalytics();
+  }
+
+  ngOnDestroy() {
+    this.destroy$.next();
+    this.destroy$.complete();
+    if (this.categoryChart) {
+      this.categoryChart.destroy();
+    }
+    if (this.turnoverChart) {
+      this.turnoverChart.destroy();
+    }
+  }
+
+  loadInventoryAnalytics() {
+    this.loading = true;
+    this.error = null;
+    this.analyticsService.getInventoryAnalytics()
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (data) => {
+          this.inventoryAnalyticsData = data;
+          this.updateKPIs(data);
+          this.updateStockAlerts(data);
+          this.loading = false;
+          // Initialize charts after data is loaded
+          this.initializeChartsWhenReady();
+        },
+        error: (err) => {
+          this.error = err.message || 'Failed to load inventory analytics';
+          this.loading = false;
+          console.error('Error loading inventory analytics:', err);
+        }
+      });
+  }
+
+  private updateKPIs(data: InventoryAnalyticsDto) {
+    this.totalStockValue = data.kpis.totalStockValue;
+    this.stockOuts = data.kpis.stockOuts;
+    this.overstockAlerts = data.kpis.overstockAlerts;
+    this.avgTurnover = data.kpis.avgTurnover;
+  }
+
+  private updateStockAlerts(data: InventoryAnalyticsDto) {
+    this.stockAlerts = data.stockAlerts || [];
+  }
 
   ngAfterViewInit() {
+    // If data is already loaded, initialize charts
+    if (this.inventoryAnalyticsData && !this.loading) {
+      this.initializeChartsWhenReady();
+    }
+  }
+
+  private initializeChartsWhenReady(attempts = 0) {
+    const maxAttempts = 10;
+    if (this.categoryChartRef && this.turnoverChartRef && this.inventoryAnalyticsData) {
+      this.initializeCharts();
+    } else if (attempts < maxAttempts) {
+      setTimeout(() => {
+        this.initializeChartsWhenReady(attempts + 1);
+      }, 50);
+    } else {
+      console.warn('Chart initialization failed: ViewChild references not available');
+    }
+  }
+
+  private initializeCharts() {
+    if (!this.categoryChartRef || !this.turnoverChartRef || !this.inventoryAnalyticsData) {
+      return;
+    }
+
+    // Destroy existing charts if they exist
+    if (this.categoryChart) {
+      this.categoryChart.destroy();
+    }
+    if (this.turnoverChart) {
+      this.turnoverChart.destroy();
+    }
+
     // Category Chart
     const categoryCtx = this.categoryChartRef.nativeElement.getContext('2d');
-    this.categoryChart = new Chart(categoryCtx!, {
-      type: 'bar',
-      data: {
-        labels: ['Antibiotics', 'Pain Relief', 'Vitamins', 'Cough & Cold', 'Others'],
-        datasets: [{
-          label: 'Stock Units',
-          data: [4200, 6700, 3100, 2800, 1500],
-          backgroundColor: ['#8B1538', '#10B981', '#3B82F6', '#F59E0B', '#6B7280']
-        }]
-      },
-      options: {
-        responsive: true,
-        plugins: { legend: { display: false } }
-      }
-    });
+    if (categoryCtx && this.inventoryAnalyticsData.stockByCategory) {
+      const stockByCategory = this.inventoryAnalyticsData.stockByCategory;
+      const labels = stockByCategory.map(item => item.category || 'Uncategorized');
+      const stockData = stockByCategory.map(item => item.stockUnits);
+
+      const colors = ['#8B1538', '#10B981', '#3B82F6', '#F59E0B', '#6B7280', '#8B5CF6', '#EC4899', '#14B8A6'];
+      const backgroundColor = labels.map((_, index) => colors[index % colors.length]);
+
+      this.categoryChart = new Chart(categoryCtx, {
+        type: 'bar',
+        data: {
+          labels: labels,
+          datasets: [{
+            label: 'Stock Units',
+            data: stockData,
+            backgroundColor: backgroundColor
+          }]
+        },
+        options: {
+          responsive: true,
+          plugins: { legend: { display: false } },
+          scales: {
+            y: {
+              ticks: {
+                callback: (v: any) => v.toLocaleString()
+              }
+            }
+          }
+        }
+      });
+    }
 
     // Turnover Chart
     const turnoverCtx = this.turnoverChartRef.nativeElement.getContext('2d');
-    this.turnoverChart = new Chart(turnoverCtx!, {
-      type: 'line',
-      data: {
-        labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
-        datasets: [{
-          label: 'Turnover Ratio',
-          data: [4.8, 5.1, 5.0, 5.3, 5.2, 5.4, 5.6, 5.3, 5.1, 5.0, 4.9, 5.2],
-          borderColor: '#D4AF37',
-          backgroundColor: 'rgba(212,175,55,0.2)',
-          fill: true,
-          tension: 0.3
-        }]
-      },
-      options: {
-        responsive: true,
-        plugins: { legend: { position: 'bottom' } }
-      }
-    });
+    if (turnoverCtx && this.inventoryAnalyticsData.turnoverRatio) {
+      const turnoverData = this.inventoryAnalyticsData.turnoverRatio;
+      const labels = turnoverData.map(item => item.month);
+      const ratioData = turnoverData.map(item => item.ratio);
+
+      this.turnoverChart = new Chart(turnoverCtx, {
+        type: 'line',
+        data: {
+          labels: labels,
+          datasets: [{
+            label: 'Turnover Ratio',
+            data: ratioData,
+            borderColor: '#D4AF37',
+            backgroundColor: 'rgba(212,175,55,0.2)',
+            fill: true,
+            tension: 0.3
+          }]
+        },
+        options: {
+          responsive: true,
+          plugins: { legend: { position: 'bottom' } },
+          scales: {
+            y: {
+              ticks: {
+                callback: (v: any) => v.toFixed(2)
+              }
+            }
+          }
+        }
+      });
+    }
+  }
+
+  formatCurrency(value: number): string {
+    if (value >= 1000000) {
+      return `SLL ${(value / 1000000).toFixed(1)}M`;
+    } else if (value >= 1000) {
+      return `SLL ${(value / 1000).toFixed(1)}K`;
+    }
+    return `SLL ${value.toLocaleString()}`;
+  }
+
+  formatTurnover(value: number): string {
+    if (value === 0) {
+      return '0x';
+    }
+    return `${value.toFixed(1)}x`;
+  }
+
+  formatStatus(status: string): string {
+    // Convert status format for display
+    return status.replace(/([A-Z])/g, ' $1').trim();
   }
 
   goBack() {

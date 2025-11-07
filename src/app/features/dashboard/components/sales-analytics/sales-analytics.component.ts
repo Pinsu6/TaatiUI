@@ -1,7 +1,11 @@
-import { Component, ElementRef, ViewChild } from '@angular/core';
+import { Component, ElementRef, ViewChild, OnInit, OnDestroy } from '@angular/core';
 import { Router } from '@angular/router';
 import { Chart } from 'chart.js/auto';
+import { AnalyticsService } from '../../../../core/services/analytics.service';
+import { AnalyticsDto } from '../../../../shared/models/analytics-dto.model';
 import { SalesRegion } from '../../../../shared/models/sales-region.model';
+import { Subject } from 'rxjs';
+import { takeUntil } from 'rxjs/operators';
 
 @Component({
   selector: 'app-sales-analytics',
@@ -9,85 +13,213 @@ import { SalesRegion } from '../../../../shared/models/sales-region.model';
   templateUrl: './sales-analytics.component.html',
   styleUrl: './sales-analytics.component.css'
 })
-export class SalesAnalyticsComponent {
+export class SalesAnalyticsComponent implements OnInit, OnDestroy {
   @ViewChild('trendChart') trendChartRef!: ElementRef<HTMLCanvasElement>;
   @ViewChild('productsChart') productsChartRef!: ElementRef<HTMLCanvasElement>;
   private trendChart!: Chart;
   private productsChart!: Chart;
+  private destroy$ = new Subject<void>();
 
-  regions: SalesRegion[] = [
-    { name: 'Western Area', revenue: 6200000, orders: 1240, growth: 12 },
-    { name: 'Northern Province', revenue: 4300000, orders: 960, growth: 9 },
-    { name: 'Southern Province', revenue: 3800000, orders: 880, growth: -3 },
-    { name: 'Eastern Province', revenue: 2400000, orders: 640, growth: 5 }
-  ];
+  analyticsData!: AnalyticsDto;
+  regions: SalesRegion[] = [];
+  loading = true;
+  error: string | null = null;
 
-  constructor(private router: Router) {}
+  // KPI values
+  thisMonthSales = 0;
+  thisQuarterSales = 0;
+  ytdSales = 0;
+  avgOrderValue = 0;
+
+  constructor(
+    private router: Router,
+    private analyticsService: AnalyticsService
+  ) {}
+
+  ngOnInit() {
+    this.loadAnalytics();
+  }
+
+  ngOnDestroy() {
+    this.destroy$.next();
+    this.destroy$.complete();
+    if (this.trendChart) {
+      this.trendChart.destroy();
+    }
+    if (this.productsChart) {
+      this.productsChart.destroy();
+    }
+  }
+
+  loadAnalytics() {
+    this.loading = true;
+    this.error = null;
+    this.analyticsService.getAnalytics()
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (data) => {
+          this.analyticsData = data;
+          this.updateKPIs(data);
+          this.updateRegions(data);
+          this.loading = false;
+          // Initialize charts after view is initialized and data is loaded
+          // Use setTimeout to ensure ViewChild references are available after DOM update
+          this.initializeChartsWhenReady();
+        },
+        error: (err) => {
+          this.error = err.message || 'Failed to load analytics data';
+          this.loading = false;
+          console.error('Error loading analytics:', err);
+        }
+      });
+  }
+
+  private updateKPIs(data: AnalyticsDto) {
+    this.thisMonthSales = data.kpis.thisMonthSales;
+    this.thisQuarterSales = data.kpis.thisQuarterSales;
+    this.ytdSales = data.kpis.ytdSales;
+    this.avgOrderValue = data.kpis.avgOrderValue;
+  }
+
+  private updateRegions(data: AnalyticsDto) {
+    if (data.salesByRegion && data.salesByRegion.length > 0) {
+      this.regions = data.salesByRegion.map(region => ({
+        name: region.name || region.region || 'Unknown',
+        revenue: region.revenue || 0,
+        orders: region.orders || 0,
+        growth: region.growth || 0
+      }));
+    } else {
+      this.regions = [];
+    }
+  }
 
   ngAfterViewInit() {
+    // If data is already loaded, initialize charts
+    // Otherwise, charts will be initialized after data loads
+    if (this.analyticsData && !this.loading) {
+      this.initializeChartsWhenReady();
+    }
+  }
+
+  private initializeChartsWhenReady(attempts = 0) {
+    const maxAttempts = 10;
+    if (this.trendChartRef && this.productsChartRef) {
+      this.initializeCharts();
+    } else if (attempts < maxAttempts) {
+      // Retry after a short delay if ViewChild references aren't ready yet
+      setTimeout(() => {
+        this.initializeChartsWhenReady(attempts + 1);
+      }, 50);
+    } else {
+      console.warn('Chart initialization failed: ViewChild references not available');
+    }
+  }
+
+  private initializeCharts() {
+    if (!this.trendChartRef || !this.productsChartRef) {
+      return;
+    }
+
+    // Destroy existing charts if they exist
+    if (this.trendChart) {
+      this.trendChart.destroy();
+    }
+    if (this.productsChart) {
+      this.productsChart.destroy();
+    }
+
     // Monthly Sales Trend Chart
     const trendCtx = this.trendChartRef.nativeElement.getContext('2d');
-    this.trendChart = new Chart(trendCtx!, {
-      type: 'line',
-      data: {
-        labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
-        datasets: [
-          {
-            label: 'Retail',
-            data: [210000, 220000, 230000, 250000, 260000, 280000, 290000, 300000, 320000, 340000, 350000, 370000],
-            borderColor: '#8B1538',
-            backgroundColor: 'rgba(139,21,56,0.2)',
-            fill: true,
-            tension: 0.3
-          },
-          {
-            label: 'Wholesale',
-            data: [150000, 160000, 170000, 175000, 180000, 200000, 210000, 220000, 230000, 240000, 250000, 260000],
-            borderColor: '#F59E0B',
-            backgroundColor: 'rgba(245,158,11,0.2)',
-            fill: true,
-            tension: 0.3
-          }
-        ]
-      },
-      options: {
-        responsive: true,
-        plugins: { legend: { position: 'bottom' } },
-        scales: {
-          y: {
-            ticks: {
-              callback: (value: any) => value.toLocaleString()
+    if (trendCtx && this.analyticsData) {
+      const labels = this.analyticsData.salesTrend.map(trend => trend.month);
+      const retailData = this.analyticsData.salesTrend.map(trend => trend.retail);
+      const wholesaleData = this.analyticsData.salesTrend.map(trend => trend.wholesale);
+
+      this.trendChart = new Chart(trendCtx, {
+        type: 'line',
+        data: {
+          labels: labels,
+          datasets: [
+            {
+              label: 'Retail',
+              data: retailData,
+              borderColor: '#8B1538',
+              backgroundColor: 'rgba(139,21,56,0.2)',
+              fill: true,
+              tension: 0.3
+            },
+            {
+              label: 'Wholesale',
+              data: wholesaleData,
+              borderColor: '#F59E0B',
+              backgroundColor: 'rgba(245,158,11,0.2)',
+              fill: true,
+              tension: 0.3
+            }
+          ]
+        },
+        options: {
+          responsive: true,
+          plugins: { legend: { position: 'bottom' } },
+          scales: {
+            y: {
+              ticks: {
+                callback: (value: any) => value.toLocaleString()
+              }
             }
           }
         }
-      }
-    });
+      });
+    }
 
     // Top Products Chart
     const productsCtx = this.productsChartRef.nativeElement.getContext('2d');
-    this.productsChart = new Chart(productsCtx!, {
-      type: 'bar',
-      data: {
-        labels: ['Amoxicillin', 'Paracetamol', 'Vitamin C', 'Ibuprofen', 'Cough Syrup'],
-        datasets: [{
-          label: 'Revenue (SLL)',
-          data: [1200000, 950000, 800000, 700000, 600000],
-          backgroundColor: ['#8B1538', '#D4AF37', '#10B981', '#3B82F6', '#F97316']
-        }]
-      },
-      options: {
-        responsive: true,
-        indexAxis: 'y',
-        plugins: { legend: { display: false } },
-        scales: {
-          x: {
-            ticks: {
-              callback: (value: any) => value.toLocaleString()
+    if (productsCtx && this.analyticsData) {
+      const topProducts = this.analyticsData.topProducts || [];
+      const productLabels = topProducts.length > 0
+        ? topProducts.map(p => p.productName || 'Unknown Product')
+        : ['No Data'];
+      const productData = topProducts.length > 0
+        ? topProducts.map(p => p.revenue || 0)
+        : [0];
+
+      const colors = ['#8B1538', '#D4AF37', '#10B981', '#3B82F6', '#F97316', '#8B5CF6', '#EC4899', '#14B8A6'];
+      const backgroundColor = productLabels.map((_, index) => colors[index % colors.length]);
+
+      this.productsChart = new Chart(productsCtx, {
+        type: 'bar',
+        data: {
+          labels: productLabels,
+          datasets: [{
+            label: 'Revenue (SLL)',
+            data: productData,
+            backgroundColor: backgroundColor
+          }]
+        },
+        options: {
+          responsive: true,
+          indexAxis: 'y',
+          plugins: { legend: { display: false } },
+          scales: {
+            x: {
+              ticks: {
+                callback: (value: any) => value.toLocaleString()
+              }
             }
           }
         }
-      }
-    });
+      });
+    }
+  }
+
+  formatCurrency(value: number): string {
+    if (value >= 1000000) {
+      return `SLL ${(value / 1000000).toFixed(1)}M`;
+    } else if (value >= 1000) {
+      return `SLL ${(value / 1000).toFixed(1)}K`;
+    }
+    return `SLL ${value.toLocaleString()}`;
   }
 
   goBack() {

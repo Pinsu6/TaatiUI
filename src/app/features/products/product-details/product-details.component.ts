@@ -39,6 +39,10 @@ export class ProductDetailsComponent {
   private salesChart!: Chart;
   private regionChart!: Chart;
   private sub = new Subscription();
+  // Pagination state for orders
+  pageSizes: number[] = [5, 10, 20, 50];
+  pageSize = 10;
+  pageNumber = 1;
   constructor(
     private route: ActivatedRoute,
     private router: Router,
@@ -125,5 +129,58 @@ export class ProductDetailsComponent {
 
   goBack(): void {
     this.router.navigate(['/products']);
+  }
+
+  /* =================== Orders Pagination (match customers) =================== */
+  get totalCount(): number {
+    return this.orders?.length || 0;
+  }
+
+  get totalPages(): number {
+    return Math.max(1, Math.ceil(this.totalCount / this.pageSize));
+  }
+
+  get hasPreviousPage(): boolean {
+    return this.pageNumber > 1;
+  }
+
+  get hasNextPage(): boolean {
+    return this.pageNumber < this.totalPages;
+  }
+
+  get pagedOrders(): any[] {
+    const start = (this.pageNumber - 1) * this.pageSize;
+    return this.orders.slice(start, start + this.pageSize);
+  }
+
+  onPageSizeChange(): void {
+    this.pageNumber = 1;
+  }
+
+  previousPage(): void {
+    if (this.hasPreviousPage) this.pageNumber -= 1;
+  }
+
+  nextPage(): void {
+    if (this.hasNextPage) this.pageNumber += 1;
+  }
+
+  goToPage(p: number): void {
+    if (!Number.isFinite(p)) return;
+    this.pageNumber = Math.min(Math.max(1, Math.trunc(p)), this.totalPages);
+  }
+
+  getVisiblePages(): number[] {
+    const windowSize = 5;
+    const total = this.totalPages;
+    let start = Math.max(1, this.pageNumber - Math.floor(windowSize / 2));
+    let end = start + windowSize - 1;
+    if (end > total) {
+      end = total;
+      start = Math.max(1, end - windowSize + 1);
+    }
+    const pages: number[] = [];
+    for (let p = start; p <= end; p++) pages.push(p);
+    return pages;
   }
 }

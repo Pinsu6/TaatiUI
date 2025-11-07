@@ -13,7 +13,8 @@ import { ApiResponse } from '../../shared/models/api-response.model';
 export class AuthService {
 
  // private readonly apiUrl = 'https://localhost:44367/api/auth';
-  private readonly apiUrl = 'https://api.tatipharma.com/api/auth'; // Base API URL
+  private readonly apiUrl = 'http://localhost:5272/api/auth';
+ // private readonly apiUrl = 'https://api.tatipharma.com/api/auth'; // Base API URL
   
   private isAuthenticated = false;
   private readonly tokenKey = 'authToken';
