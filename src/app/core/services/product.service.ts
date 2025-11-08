@@ -82,4 +82,11 @@ getById(id: number): Observable<ProductDetailDto> {
       catchError(err => throwError(() => err))
     );
   }
+
+  exportProducts(format: 'excel' | 'csv', payload: { pageNumber: number; pageSize: number; search: string; drugTypeId?: number }): Observable<Blob> {
+    const url = `${this.apiUrl}/export/${format}`;
+    return this.http.post(url, payload, { responseType: 'blob' }).pipe(
+      catchError(err => throwError(() => err))
+    );
+  }
 }

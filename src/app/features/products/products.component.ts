@@ -13,9 +13,13 @@ import { ProductService } from '../../core/services/product.service';
   styleUrl: './products.component.css'
 })
 export class ProductsComponent {
+  lastUpdate: string = new Date().toLocaleString('en-GB', { day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit' });
   searchTerm = '';
   selectedCategory = 'All Categories';
   categories = ['All Categories', 'Antibiotics', 'Painkillers', 'Vitamins', 'Others'];  // Static for now
+  showExportModal = false;
+  isExporting = false;
+  exportErrorMessage: string | null = null;
 
   products: Product[] = [];
   isLoading = true;
@@ -126,11 +130,66 @@ export class ProductsComponent {
   }
 
   refresh(): void {
+    this.lastUpdate = new Date().toLocaleString('en-GB', { day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit' });
     this.loadProducts();
   }
 
   viewProduct(id: number): void {
     this.router.navigate(['/products', id]);
+  }
+
+  openExportModal() { 
+    this.showExportModal = true; 
+  }
+
+  closeExportModal() {
+    this.showExportModal = false;
+    this.isExporting = false;
+    this.exportErrorMessage = null;
+  }
+
+  export(format: 'pdf' | 'excel' | 'csv') {
+    if (format === 'pdf') {
+      this.exportErrorMessage = 'PDF export is not available yet.';
+      return;
+    }
+
+    const drugTypeId = this.selectedCategory === 'All Categories' ? undefined
+      : this.getCategoryId(this.selectedCategory);
+
+    const payload = {
+      pageNumber: 2147483647,
+      pageSize: 100,
+      search: this.searchTerm || 'string',
+      drugTypeId
+    };
+
+    this.isExporting = true;
+    this.exportErrorMessage = null;
+
+    this.productService.exportProducts(format, payload).subscribe({
+      next: (blob) => {
+        this.downloadFile(blob, format);
+        this.isExporting = false;
+        this.closeExportModal();
+      },
+      error: (error) => {
+        this.exportErrorMessage = error.message || 'Failed to export products.';
+        this.isExporting = false;
+      }
+    });
+  }
+
+  private downloadFile(blob: Blob, format: 'excel' | 'csv'): void {
+    const extension = format === 'excel' ? 'xlsx' : 'csv';
+    const fileName = `products-${new Date().toISOString()}.${extension}`;
+
+    const url = window.URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = fileName;
+    link.click();
+    window.URL.revokeObjectURL(url);
   }
 
   private getCategoryId(name: string): number | undefined {
