@@ -1,0 +1,28 @@
+.chart-container {
+  position: relative;
+  height: 400px;
+  width: 100%;
+  margin-top: 1rem;
+}
+
+/* Ensure proper spacing for all cards */
+main {
+  padding: 1rem;
+}
+
+/* Add consistent card styling */
+.bg-white {
+  transition: all 0.3s ease;
+}
+
+/* Improve table spacing */
+table {
+  border-collapse: separate;
+  border-spacing: 0;
+}
+
+/* Better spacing for empty state */
+.no-alerts-container {
+  padding: 3rem;
+}
+

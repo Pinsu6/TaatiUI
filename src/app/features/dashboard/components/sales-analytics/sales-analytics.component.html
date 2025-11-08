@@ -64,17 +64,13 @@
         <option>Last 3 Months</option>
         <option>This Year</option>
       </select>
-      <select class="px-4 py-2 border rounded-md">
-        <option>All Regions</option>
-        <option>Western Area</option>
-        <option>Northern Province</option>
-        <option>Southern Province</option>
+      <select class="px-4 py-2 border rounded-md" [(ngModel)]="selectedCity">
+        <option [ngValue]="null">All Cities</option>
+        <option *ngFor="let city of cities" [ngValue]="city.cityName">{{ city.cityName }}</option>
       </select>
-      <select class="px-4 py-2 border rounded-md">
-        <option>All Products</option>
-        <option>Antibiotics</option>
-        <option>Pain Relief</option>
-        <option>Vitamins</option>
+      <select class="px-4 py-2 border rounded-md" [(ngModel)]="selectedProductId">
+        <option [ngValue]="null">All Products</option>
+        <option *ngFor="let product of products" [ngValue]="product.drugId">{{ product.drugName }}</option>
       </select>
       <button class="px-4 py-2 bg-gradient-to-r from-tati-burgundy to-[#6B0E2B] text-white rounded-md">
         <i class="fas fa-filter mr-2"></i> Apply Filters

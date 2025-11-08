@@ -74,6 +74,17 @@ export class AnalyticsService {
       );
   }
 
+  exportProductInsights(format: 'pdf' | 'excel' | 'csv', payload: any): Observable<Blob> {
+    // PDF and Excel exports use the Products endpoint
+    const baseUrl = (format === 'pdf' || format === 'excel')
+      ? 'http://localhost:5272/api/Products'
+      : `${this.apiUrl}/product-insights`;
+    const url = `${baseUrl}/export/${format}`;
+    return this.http.post(url, payload, { responseType: 'blob' }).pipe(
+      catchError(this.handleError)
+    );
+  }
+
   private handleError(error: HttpErrorResponse): Observable<never> {
     let errorMsg = 'An unexpected error occurred';
     if (error.error instanceof ErrorEvent) {

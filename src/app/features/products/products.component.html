@@ -30,10 +30,10 @@
         class="w-full pl-10 pr-4 py-2 border rounded-lg focus:ring-2 focus:ring-tati-burgundy outline-none">
       <i class="fas fa-search absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
     </div>
-    <select [(ngModel)]="selectedCategory" (ngModelChange)="onCategoryChange()"
+    <select [(ngModel)]="selectedDrugTypeId" (ngModelChange)="onDrugTypeChange()"
       class="px-4 py-2 border rounded-lg focus:ring-2 focus:ring-tati-burgundy outline-none">
-      <option value="All Categories">All Categories</option>
-      <option *ngFor="let cat of categories | slice:1" [value]="cat">{{ cat }}</option>
+      <option [ngValue]="null">All Categories</option>
+      <option *ngFor="let drugType of drugTypes" [ngValue]="drugType.drugTypeId">{{ drugType.drugTypeName }}</option>
     </select>
   </div>
 

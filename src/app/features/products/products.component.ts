@@ -1,10 +1,12 @@
-import { Component } from '@angular/core';
+import { Component, OnDestroy } from '@angular/core';
 import { Product } from '../../shared/models/product.model';
 import { Router } from '@angular/router';
 import { PagedResult } from '../../shared/models/paged-result.model';
 import { ProductFilter } from '../../shared/models/product-filter.model';
-import { debounceTime, Subject, Subscription } from 'rxjs';
+import { debounceTime, Subject, Subscription, takeUntil } from 'rxjs';
 import { ProductService } from '../../core/services/product.service';
+import { HelperService } from '../../core/services/helper.service';
+import { HelperDrugTypeDto } from '../../shared/models/helper-drug-type-dto.model';
 
 @Component({
   selector: 'app-products',
@@ -12,11 +14,11 @@ import { ProductService } from '../../core/services/product.service';
   templateUrl: './products.component.html',
   styleUrl: './products.component.css'
 })
-export class ProductsComponent {
+export class ProductsComponent implements OnDestroy {
   lastUpdate: string = new Date().toLocaleString('en-GB', { day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit' });
   searchTerm = '';
-  selectedCategory = 'All Categories';
-  categories = ['All Categories', 'Antibiotics', 'Painkillers', 'Vitamins', 'Others'];  // Static for now
+  selectedDrugTypeId: number | null = null;
+  drugTypes: HelperDrugTypeDto[] = [];
   showExportModal = false;
   isExporting = false;
   exportErrorMessage: string | null = null;
@@ -35,8 +37,13 @@ export class ProductsComponent {
 
   private searchSubject = new Subject<string>();
   private subscriptions = new Subscription();
+  private destroy$ = new Subject<void>();
 
-  constructor(private productService: ProductService, private router: Router) {}
+  constructor(
+    private productService: ProductService,
+    private router: Router,
+    private helperService: HelperService
+  ) {}
 
   ngOnInit(): void {
     this.subscriptions.add(
@@ -47,24 +54,24 @@ export class ProductsComponent {
       })
     );
     this.loadProducts();
+    this.loadDrugTypes();
   }
 
   ngOnDestroy(): void {
     this.subscriptions.unsubscribe();
+    this.destroy$.next();
+    this.destroy$.complete();
   }
 
   loadProducts(): void {
     this.isLoading = true;
     this.errorMessage = '';
 
-    const drugTypeId = this.selectedCategory === 'All Categories' ? undefined
-      : this.getCategoryId(this.selectedCategory);
-
     const filter: ProductFilter = {
       pageNumber: this.pageNumber,
       pageSize: this.pageSize,
       search: this.searchTerm || undefined,
-      drugTypeId
+      drugTypeId: this.selectedDrugTypeId || undefined
     };
 
     this.subscriptions.add(
@@ -90,9 +97,9 @@ export class ProductsComponent {
   this.searchSubject.next(value);
 }
 
-  onCategoryChange(): void {
+  onDrugTypeChange(): void {
     this.pageNumber = 1;
-    this.loadProducts();  // FIXED: Explicit reload
+    this.loadProducts();
   }
 
   onPageSizeChange(): void {
@@ -149,20 +156,26 @@ export class ProductsComponent {
   }
 
   export(format: 'pdf' | 'excel' | 'csv') {
-    if (format === 'pdf') {
-      this.exportErrorMessage = 'PDF export is not available yet.';
-      return;
+    let payload: any;
+
+    if (format === 'excel') {
+      payload = {
+        pageNumber: 1,
+        pageSize: 1
+      };
+    } else if (format === 'pdf') {
+      payload = {
+        pageNumber: 1,
+        pageSize: 1
+      };
+    } else {
+      payload = {
+        pageNumber: 2147483647,
+        pageSize: 100,
+        search: this.searchTerm || 'string',
+        drugTypeId: this.selectedDrugTypeId || undefined
+      };
     }
-
-    const drugTypeId = this.selectedCategory === 'All Categories' ? undefined
-      : this.getCategoryId(this.selectedCategory);
-
-    const payload = {
-      pageNumber: 2147483647,
-      pageSize: 100,
-      search: this.searchTerm || 'string',
-      drugTypeId
-    };
 
     this.isExporting = true;
     this.exportErrorMessage = null;
@@ -180,8 +193,8 @@ export class ProductsComponent {
     });
   }
 
-  private downloadFile(blob: Blob, format: 'excel' | 'csv'): void {
-    const extension = format === 'excel' ? 'xlsx' : 'csv';
+  private downloadFile(blob: Blob, format: 'pdf' | 'excel' | 'csv'): void {
+    const extension = format === 'excel' ? 'xlsx' : format === 'pdf' ? 'pdf' : 'csv';
     const fileName = `products-${new Date().toISOString()}.${extension}`;
 
     const url = window.URL.createObjectURL(blob);
@@ -192,13 +205,17 @@ export class ProductsComponent {
     window.URL.revokeObjectURL(url);
   }
 
-  private getCategoryId(name: string): number | undefined {
-    const map: Record<string, number> = {
-      'Antibiotics': 1,  // Match your DB IDs
-      'Painkillers': 2,
-      'Vitamins': 3,
-      'Others': 4
-    };
-    return map[name];
+  loadDrugTypes() {
+    this.helperService.getDrugTypes()
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (drugTypes) => {
+          this.drugTypes = drugTypes;
+        },
+        error: (err) => {
+          console.error('Error loading drug types:', err);
+          // Don't show error to user, just log it
+        }
+      });
   }
 }

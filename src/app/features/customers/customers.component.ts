@@ -53,20 +53,29 @@ export class CustomersComponent {
   }
 
   export(format: 'pdf' | 'excel' | 'csv') {
-    if (format === 'pdf') {
-      this.exportErrorMessage = 'PDF export is not available yet.';
-      return;
+    let payload: any;
+
+    if (format === 'excel') {
+      payload = {
+        pageNumber: 1,
+        pageSize: 1
+      };
+    } else if (format === 'pdf') {
+      payload = {
+        pageNumber: 1,
+        pageSize: 1
+      };
+    } else {
+      const isActive = this.selectedStatus === 'active' ? true :
+        this.selectedStatus === 'inactive' ? false : undefined;
+
+      payload = {
+        pageNumber: 2147483647,
+        pageSize: 100,
+        search: this.searchQuery || 'string',
+        isActive: isActive ?? true
+      };
     }
-
-    const isActive = this.selectedStatus === 'active' ? true :
-      this.selectedStatus === 'inactive' ? false : undefined;
-
-    const payload = {
-      pageNumber: 2147483647,
-      pageSize: 100,
-      search: this.searchQuery || 'string',
-      isActive: isActive ?? true
-    };
 
     this.isExporting = true;
     this.exportErrorMessage = null;
@@ -84,8 +93,8 @@ export class CustomersComponent {
     });
   }
 
-  private downloadFile(blob: Blob, format: 'excel' | 'csv'): void {
-    const extension = format === 'excel' ? 'xlsx' : 'csv';
+  private downloadFile(blob: Blob, format: 'pdf' | 'excel' | 'csv'): void {
+    const extension = format === 'excel' ? 'xlsx' : format === 'pdf' ? 'pdf' : 'csv';
     const fileName = `customers-${new Date().toISOString()}.${extension}`;
 
     const url = window.URL.createObjectURL(blob);

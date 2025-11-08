@@ -74,17 +74,9 @@
 
   <!-- Filters -->
   <div class="bg-white rounded-xl p-6 shadow flex flex-wrap gap-4 items-center">
-    <select class="px-4 py-2 border rounded-md">
-      <option>All Categories</option>
-      <option>Antibiotics</option>
-      <option>Pain Relief</option>
-      <option>Vitamins</option>
-    </select>
-    <select class="px-4 py-2 border rounded-md">
-      <option>All Status</option>
-      <option>Fast Moving</option>
-      <option>Slow Moving</option>
-      <option>New</option>
+    <select class="px-4 py-2 border rounded-md" [(ngModel)]="selectedDrugTypeId">
+      <option [ngValue]="null">All Categories</option>
+      <option *ngFor="let drugType of drugTypes" [ngValue]="drugType.drugTypeId">{{ drugType.drugTypeName }}</option>
     </select>
     <input type="date" class="px-4 py-2 border rounded-md"/>
     <button class="px-4 py-2 bg-gradient-to-r from-tati-burgundy to-[#6B0E2B] text-white rounded-md">
@@ -184,6 +176,35 @@
             <p>No AI recommendations available</p>
           </div>
         </ng-template>
+      </div>
+    </div>
+  </div>
+
+  <!-- Export Modal -->
+  <div *ngIf="showExportModal" class="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
+    <div class="bg-white rounded-xl w-96 p-6 shadow">
+      <h3 class="font-semibold text-lg text-tati-burgundy mb-3">Export Product Insights</h3>
+      <p class="text-sm text-gray-600 mb-4">Choose a format and download the product insights data.</p>
+      <div class="flex gap-3">
+        <button class="flex-1 px-4 py-2 border rounded-md hover:bg-gray-50 disabled:opacity-50"
+                [disabled]="isExporting"
+                (click)="export('pdf')">PDF</button>
+        <button class="flex-1 px-4 py-2 border rounded-md hover:bg-gray-50 disabled:opacity-50"
+                [disabled]="isExporting"
+                (click)="export('excel')">Excel</button>
+        <button class="flex-1 px-4 py-2 border rounded-md hover:bg-gray-50 disabled:opacity-50"
+                [disabled]="isExporting"
+                (click)="export('csv')">CSV</button>
+      </div>
+      <div *ngIf="isExporting" class="mt-4 flex items-center gap-2 text-sm text-gray-600">
+        <i class="fas fa-spinner fa-spin"></i>
+        <span>Preparing your download...</span>
+      </div>
+      <div *ngIf="exportErrorMessage" class="mt-4 text-sm text-red-600">
+        {{ exportErrorMessage }}
+      </div>
+      <div class="mt-4 text-right">
+        <button (click)="closeExportModal()" class="px-4 py-2 text-sm text-gray-600" [disabled]="isExporting">Close</button>
       </div>
     </div>
   </div>

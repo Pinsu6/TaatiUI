@@ -2,8 +2,11 @@ import { Component, ElementRef, ViewChild, OnInit, OnDestroy } from '@angular/co
 import { Router } from '@angular/router';
 import { Chart } from 'chart.js/auto';
 import { AnalyticsService } from '../../../../core/services/analytics.service';
+import { HelperService } from '../../../../core/services/helper.service';
 import { AnalyticsDto } from '../../../../shared/models/analytics-dto.model';
 import { SalesRegion } from '../../../../shared/models/sales-region.model';
+import { HelperProductDto } from '../../../../shared/models/helper-product-dto.model';
+import { HelperCityDto } from '../../../../shared/models/helper-city-dto.model';
 import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 
@@ -22,6 +25,10 @@ export class SalesAnalyticsComponent implements OnInit, OnDestroy {
 
   analyticsData!: AnalyticsDto;
   regions: SalesRegion[] = [];
+  products: HelperProductDto[] = [];
+  cities: HelperCityDto[] = [];
+  selectedProductId: number | null = null;
+  selectedCity: string | null = null;
   loading = true;
   error: string | null = null;
 
@@ -33,11 +40,14 @@ export class SalesAnalyticsComponent implements OnInit, OnDestroy {
 
   constructor(
     private router: Router,
-    private analyticsService: AnalyticsService
+    private analyticsService: AnalyticsService,
+    private helperService: HelperService
   ) {}
 
   ngOnInit() {
     this.loadAnalytics();
+    this.loadProducts();
+    this.loadCities();
   }
 
   ngOnDestroy() {
@@ -224,5 +234,33 @@ export class SalesAnalyticsComponent implements OnInit, OnDestroy {
 
   goBack() {
     this.router.navigate(['/dashboard']);
+  }
+
+  loadProducts() {
+    this.helperService.getProducts()
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (products) => {
+          this.products = products;
+        },
+        error: (err) => {
+          console.error('Error loading products:', err);
+          // Don't show error to user, just log it
+        }
+      });
+  }
+
+  loadCities() {
+    this.helperService.getCities()
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (cities) => {
+          this.cities = cities;
+        },
+        error: (err) => {
+          console.error('Error loading cities:', err);
+          // Don't show error to user, just log it
+        }
+      });
   }
 }

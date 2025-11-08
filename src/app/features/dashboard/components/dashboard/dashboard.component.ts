@@ -4,8 +4,10 @@ import * as L from 'leaflet';
 import { Pharmacy } from '../../../../shared/models/pharmacy.model';
 import { RefreshService } from '../../../../core/services/refresh.service';
 import { AnalyticsService } from '../../../../core/services/analytics.service';
+import { HelperService } from '../../../../core/services/helper.service';
 import { DashboardDto } from '../../../../shared/models/dashboard-dto.model';
 import { TopPharmacyDto } from '../../../../shared/models/top-pharmacy-dto.model';
+import { HelperProductDto } from '../../../../shared/models/helper-product-dto.model';
 import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 
@@ -26,6 +28,8 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
 
   dashboardData!: DashboardDto;
   pharmacies: Pharmacy[] = [];
+  products: HelperProductDto[] = [];
+  selectedProductId: number | null = null;
   
   loading = true;
   error: string | null = null;
@@ -40,7 +44,8 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
 
   constructor(
     private refreshService: RefreshService,
-    private analyticsService: AnalyticsService
+    private analyticsService: AnalyticsService,
+    private helperService: HelperService
   ) {
     this.refreshService.refresh$.subscribe(() => {
       if (!this.loading) {
@@ -51,6 +56,7 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
 
   ngOnInit() {
     this.loadDashboard();
+    this.loadProducts();
   }
 
   ngOnDestroy() {
@@ -308,4 +314,19 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
   formatFulfillment(value: number): string {
     return `${value.toFixed(1)}%`;
   }
+
+  loadProducts() {
+    this.helperService.getProducts()
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (products) => {
+          this.products = products;
+        },
+        error: (err) => {
+          console.error('Error loading products:', err);
+          // Don't show error to user, just log it
+        }
+      });
+  }
+
 }

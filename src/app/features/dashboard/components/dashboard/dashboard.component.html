@@ -94,10 +94,9 @@
       <option>Western Area</option>
       <option>Northern Province</option>
     </select>
-    <select class="px-4 py-2 border rounded-md">
-      <option>All Products</option>
-      <option>Antibiotics</option>
-      <option>Pain Relief</option>
+    <select class="px-4 py-2 border rounded-md" [(ngModel)]="selectedProductId">
+      <option [ngValue]="null">All Products</option>
+      <option *ngFor="let product of products" [ngValue]="product.drugId">{{ product.drugName }}</option>
     </select>
     <select class="px-4 py-2 border rounded-md">
       <option>Last 30 days</option>

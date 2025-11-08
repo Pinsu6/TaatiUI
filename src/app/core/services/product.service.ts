@@ -83,8 +83,12 @@ getById(id: number): Observable<ProductDetailDto> {
     );
   }
 
-  exportProducts(format: 'excel' | 'csv', payload: { pageNumber: number; pageSize: number; search: string; drugTypeId?: number }): Observable<Blob> {
-    const url = `${this.apiUrl}/export/${format}`;
+  exportProducts(format: 'pdf' | 'excel' | 'csv', payload: any): Observable<Blob> {
+    // Excel and PDF exports use endpoint with capital P
+    const baseUrl = (format === 'pdf' || format === 'excel')
+      ? 'http://localhost:5272/api/Products'
+      : this.apiUrl;
+    const url = `${baseUrl}/export/${format}`;
     return this.http.post(url, payload, { responseType: 'blob' }).pipe(
       catchError(err => throwError(() => err))
     );

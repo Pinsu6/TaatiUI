@@ -105,8 +105,12 @@ export class CustomerService {
     return throwError(() => new Error(errorMsg));
   }
 
-  exportCustomers(format: 'excel' | 'csv', payload: { pageNumber: number; pageSize: number; search: string; isActive: boolean }): Observable<Blob> {
-    const url = `${this.apiUrl}/export/${format}`;
+  exportCustomers(format: 'pdf' | 'excel' | 'csv', payload: any): Observable<Blob> {
+    // PDF export uses different endpoint with capital C
+    const baseUrl = format === 'pdf' 
+      ? 'http://localhost:5272/api/Customer'
+      : this.apiUrl;
+    const url = `${baseUrl}/export/${format}`;
     return this.http.post(url, payload, { responseType: 'blob' }).pipe(
       catchError(this.handleError)
     );

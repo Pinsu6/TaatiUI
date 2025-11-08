@@ -2,10 +2,11 @@ import { Component, ElementRef, ViewChild, OnInit, OnDestroy } from '@angular/co
 import { Chart } from 'chart.js/auto';
 import { Router } from '@angular/router';
 import { AnalyticsService } from '../../../../core/services/analytics.service';
-import { ModalService } from '../../../../core/services/modal.service';
+import { HelperService } from '../../../../core/services/helper.service';
 import { ProductInsightsDto } from '../../../../shared/models/product-insights-dto.model';
 import { ProductInsightDto } from '../../../../shared/models/product-insight-dto.model';
 import { AIRecommendation } from '../../../../shared/models/ai-recommendation.model';
+import { HelperDrugTypeDto } from '../../../../shared/models/helper-drug-type-dto.model';
 import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 
@@ -25,9 +26,16 @@ export class ProductInsightsComponent implements OnInit, OnDestroy {
   productInsightsData!: ProductInsightsDto;
   products: ProductInsightDto[] = [];
   aiRecommendations: AIRecommendation[] = [];
+  drugTypes: HelperDrugTypeDto[] = [];
+  selectedDrugTypeId: number | null = null;
   
   loading = true;
   error: string | null = null;
+
+  // Export modal state
+  showExportModal = false;
+  isExporting = false;
+  exportErrorMessage: string | null = null;
 
   // KPI values
   topProductName = '';
@@ -41,11 +49,12 @@ export class ProductInsightsComponent implements OnInit, OnDestroy {
   constructor(
     private router: Router,
     private analyticsService: AnalyticsService,
-    private modalService: ModalService
+    private helperService: HelperService
   ) {}
 
   ngOnInit() {
     this.loadProductInsights();
+    this.loadDrugTypes();
   }
 
   ngOnDestroy() {
@@ -87,7 +96,53 @@ export class ProductInsightsComponent implements OnInit, OnDestroy {
   }
 
   openExportModal() {
-    this.modalService.openExportModal();
+    this.showExportModal = true;
+  }
+
+  closeExportModal() {
+    this.showExportModal = false;
+    this.isExporting = false;
+    this.exportErrorMessage = null;
+  }
+
+  export(format: 'pdf' | 'excel' | 'csv') {
+    // Only pass pageNumber=1 and pageSize=1, nothing else
+    const payload = {
+      pageNumber: 1,
+      pageSize: 1
+    };
+
+    this.isExporting = true;
+    this.exportErrorMessage = null;
+
+    this.analyticsService.exportProductInsights(format, payload).subscribe({
+      next: (blob) => {
+        this.downloadFile(blob, format);
+        this.isExporting = false;
+        this.closeExportModal();
+      },
+      error: (error) => {
+        this.exportErrorMessage = error.message || 'Failed to export product insights.';
+        this.isExporting = false;
+      }
+    });
+  }
+
+  private downloadFile(blob: Blob, format: 'excel' | 'csv' | 'pdf'): void {
+    let extension = 'xlsx';
+    if (format === 'csv') {
+      extension = 'csv';
+    } else if (format === 'pdf') {
+      extension = 'pdf';
+    }
+    const fileName = `product-insights-${new Date().toISOString()}.${extension}`;
+
+    const url = window.URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = fileName;
+    link.click();
+    window.URL.revokeObjectURL(url);
   }
 
   private updateKPIs(data: ProductInsightsDto) {
@@ -232,5 +287,19 @@ export class ProductInsightsComponent implements OnInit, OnDestroy {
 
   goBack() {
     this.router.navigate(['/dashboard']);
+  }
+
+  loadDrugTypes() {
+    this.helperService.getDrugTypes()
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (drugTypes) => {
+          this.drugTypes = drugTypes;
+        },
+        error: (err) => {
+          console.error('Error loading drug types:', err);
+          // Don't show error to user, just log it
+        }
+      });
   }
 }
