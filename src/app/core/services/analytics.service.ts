@@ -144,6 +144,41 @@ export class AnalyticsService {
       );
   }
 
+  getDashboardWithFilters(filters: { timePeriod?: string; city?: string | null; productId?: number | null }): Observable<DashboardDto> {
+    // Build query parameters - only include non-null/non-empty values
+    const params: any = {};
+    if (filters.timePeriod) {
+      params.timePeriod = filters.timePeriod;
+    }
+    if (filters.city) {
+      params.city = filters.city;
+    }
+    if (filters.productId) {
+      params.productId = filters.productId;
+    }
+
+    // Build query string
+    const queryString = Object.keys(params)
+      .map(key => `${encodeURIComponent(key)}=${encodeURIComponent(params[key])}`)
+      .join('&');
+
+    const url = queryString ? `${this.apiUrl}/dashboard?${queryString}` : `${this.apiUrl}/dashboard`;
+
+    console.log('Fetching dashboard with URL:', url);
+
+    return this.http.get<ApiResponse<DashboardDto>>(url)
+      .pipe(
+        map(response => {
+          if (response.success && response.data) {
+            return response.data;
+          } else {
+            throw new Error(response.message || 'Failed to fetch filtered dashboard data');
+          }
+        }),
+        catchError(this.handleError)
+      );
+  }
+
   exportProductInsights(format: 'pdf' | 'excel' | 'csv', payload: any): Observable<Blob> {
     // PDF and Excel exports use the Products endpoint
     const baseUrl = (format === 'pdf' || format === 'excel')

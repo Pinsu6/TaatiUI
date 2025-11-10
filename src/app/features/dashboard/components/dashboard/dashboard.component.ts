@@ -34,6 +34,7 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
   selectedProductId: number | null = null;
   cities: HelperCityDto[] = [];
   selectedCity: string | null = null;
+  selectedTimePeriod: string = 'Last 30 days';
   drugTypes: HelperDrugTypeDto[] = [];
   
   loading = true;
@@ -100,6 +101,39 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
           this.error = err.message || 'Failed to load dashboard data';
           this.loading = false;
           console.error('Error loading dashboard:', err);
+        }
+      });
+  }
+
+  applyFilters() {
+    const filterData = {
+      timePeriod: this.selectedTimePeriod || 'Last 30 days',
+      city: this.selectedCity,
+      productId: this.selectedProductId
+    };
+
+    console.log('Applying filters:', filterData);
+    
+    this.loading = true;
+    this.error = null;
+    
+    this.analyticsService.getDashboardWithFilters(filterData)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (data) => {
+          this.dashboardData = data;
+          this.updateKPIs(data);
+          this.updatePharmacies(data);
+          this.loading = false;
+          // Reinitialize charts with new data
+          setTimeout(() => {
+            this.initializeChartsWhenReady();
+          }, 100);
+        },
+        error: (err) => {
+          this.error = err.message || 'Failed to load filtered dashboard data';
+          this.loading = false;
+          console.error('Error loading filtered dashboard:', err);
         }
       });
   }

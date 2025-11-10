@@ -97,12 +97,12 @@
       <option [ngValue]="null">All Products</option>
       <option *ngFor="let product of products" [ngValue]="product.drugId">{{ product.drugName }}</option>
     </select>
-    <select class="px-4 py-2 border rounded-md">
+    <select class="px-4 py-2 border rounded-md" [(ngModel)]="selectedTimePeriod">
       <option>Last 30 days</option>
       <option>Last 7 days</option>
       <option>Last 90 days</option>
     </select>
-    <button class="px-4 py-2 bg-gradient-to-r from-[#8B1538] to-[#6B0E2B] text-white rounded-md">Apply Filters</button>
+    <button class="px-4 py-2 bg-gradient-to-r from-[#8B1538] to-[#6B0E2B] text-white rounded-md hover:opacity-90 transition-opacity" (click)="applyFilters()">Apply Filters</button>
   </div>
 
   <!-- Charts Row -->
