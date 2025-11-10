@@ -29,6 +29,7 @@ export class SalesAnalyticsComponent implements OnInit, OnDestroy {
   cities: HelperCityDto[] = [];
   selectedProductId: number | null = null;
   selectedCity: string | null = null;
+  selectedTimePeriod: string = 'This Month';
   loading = true;
   error: string | null = null;
 
@@ -80,6 +81,37 @@ export class SalesAnalyticsComponent implements OnInit, OnDestroy {
           this.error = err.message || 'Failed to load analytics data';
           this.loading = false;
           console.error('Error loading analytics:', err);
+        }
+      });
+  }
+
+  applyFilters() {
+    const filterData = {
+      timePeriod: this.selectedTimePeriod || 'This Month',
+      city: this.selectedCity,
+      productId: this.selectedProductId
+    };
+
+    console.log('Applying filters:', filterData);
+    
+    this.loading = true;
+    this.error = null;
+    
+    this.analyticsService.getAnalyticsWithFilters(filterData)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (data) => {
+          this.analyticsData = data;
+          this.updateKPIs(data);
+          this.updateRegions(data);
+          this.loading = false;
+          // Reinitialize charts with new data
+          this.initializeChartsWhenReady();
+        },
+        error: (err) => {
+          this.error = err.message || 'Failed to load filtered analytics data';
+          this.loading = false;
+          console.error('Error loading filtered analytics:', err);
         }
       });
   }

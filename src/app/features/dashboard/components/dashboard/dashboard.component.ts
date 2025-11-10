@@ -8,6 +8,8 @@ import { HelperService } from '../../../../core/services/helper.service';
 import { DashboardDto } from '../../../../shared/models/dashboard-dto.model';
 import { TopPharmacyDto } from '../../../../shared/models/top-pharmacy-dto.model';
 import { HelperProductDto } from '../../../../shared/models/helper-product-dto.model';
+import { HelperCityDto } from '../../../../shared/models/helper-city-dto.model';
+import { HelperDrugTypeDto } from '../../../../shared/models/helper-drug-type-dto.model';
 import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 
@@ -30,6 +32,9 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
   pharmacies: Pharmacy[] = [];
   products: HelperProductDto[] = [];
   selectedProductId: number | null = null;
+  cities: HelperCityDto[] = [];
+  selectedCity: string | null = null;
+  drugTypes: HelperDrugTypeDto[] = [];
   
   loading = true;
   error: string | null = null;
@@ -57,6 +62,8 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
   ngOnInit() {
     this.loadDashboard();
     this.loadProducts();
+    this.loadCities();
+    this.loadDrugTypes();
   }
 
   ngOnDestroy() {
@@ -324,6 +331,34 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
         },
         error: (err) => {
           console.error('Error loading products:', err);
+          // Don't show error to user, just log it
+        }
+      });
+  }
+
+  loadCities() {
+    this.helperService.getCities()
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (cities) => {
+          this.cities = cities;
+        },
+        error: (err) => {
+          console.error('Error loading cities:', err);
+          // Don't show error to user, just log it
+        }
+      });
+  }
+
+  loadDrugTypes() {
+    this.helperService.getDrugTypes()
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (drugTypes) => {
+          this.drugTypes = drugTypes;
+        },
+        error: (err) => {
+          console.error('Error loading drug types:', err);
           // Don't show error to user, just log it
         }
       });

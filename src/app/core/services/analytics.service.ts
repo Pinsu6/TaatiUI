@@ -32,6 +32,41 @@ export class AnalyticsService {
       );
   }
 
+  getAnalyticsWithFilters(filters: { timePeriod?: string; city?: string | null; productId?: number | null }): Observable<AnalyticsDto> {
+    // Build query parameters - only include non-null/non-empty values
+    const params: any = {};
+    if (filters.timePeriod) {
+      params.timePeriod = filters.timePeriod;
+    }
+    if (filters.city) {
+      params.city = filters.city;
+    }
+    if (filters.productId) {
+      params.productId = filters.productId;
+    }
+
+    // Build query string
+    const queryString = Object.keys(params)
+      .map(key => `${encodeURIComponent(key)}=${encodeURIComponent(params[key])}`)
+      .join('&');
+
+    const url = queryString ? `${this.apiUrl}?${queryString}` : this.apiUrl;
+
+    console.log('Fetching analytics with URL:', url);
+
+    return this.http.get<ApiResponse<AnalyticsDto>>(url)
+      .pipe(
+        map(response => {
+          if (response.success && response.data) {
+            return response.data;
+          } else {
+            throw new Error(response.message || 'Failed to fetch filtered analytics');
+          }
+        }),
+        catchError(this.handleError)
+      );
+  }
+
   getProductInsights(): Observable<ProductInsightsDto> {
     return this.http.get<ApiResponse<ProductInsightsDto>>(`${this.apiUrl}/product-insights`)
       .pipe(
@@ -40,6 +75,41 @@ export class AnalyticsService {
             return response.data;
           } else {
             throw new Error(response.message || 'Failed to fetch product insights');
+          }
+        }),
+        catchError(this.handleError)
+      );
+  }
+
+  getProductInsightsWithFilters(filters: { drugTypeId?: number | null; startDate?: string; endDate?: string }): Observable<ProductInsightsDto> {
+    // Build query parameters - only include non-null/non-empty values
+    const params: any = {};
+    if (filters.drugTypeId) {
+      params.drugTypeId = filters.drugTypeId;
+    }
+    if (filters.startDate) {
+      params.startDate = filters.startDate;
+    }
+    if (filters.endDate) {
+      params.endDate = filters.endDate;
+    }
+
+    // Build query string
+    const queryString = Object.keys(params)
+      .map(key => `${encodeURIComponent(key)}=${encodeURIComponent(params[key])}`)
+      .join('&');
+
+    const url = queryString ? `${this.apiUrl}/product-insights?${queryString}` : `${this.apiUrl}/product-insights`;
+
+    console.log('Fetching product insights with URL:', url);
+
+    return this.http.get<ApiResponse<ProductInsightsDto>>(url)
+      .pipe(
+        map(response => {
+          if (response.success && response.data) {
+            return response.data;
+          } else {
+            throw new Error(response.message || 'Failed to fetch filtered product insights');
           }
         }),
         catchError(this.handleError)

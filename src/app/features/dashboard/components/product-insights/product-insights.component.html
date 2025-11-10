@@ -1,5 +1,5 @@
-<section class="space-y-8">
-  <header class="bg-white rounded-xl p-6 shadow mb-6 border-t-4 border-tati-gold">
+<section class="space-y-6">
+  <header class="bg-white rounded-xl p-6 shadow border-t-4 border-tati-gold">
     <div class="flex justify-between items-center gap-4 flex-wrap">
       <div>
         <h2 class="text-2xl font-bold text-tati-burgundy">Product Insights</h2>
@@ -35,7 +35,7 @@
   </div>
 
   <!-- Content -->
-  <div *ngIf="!loading && !error">
+  <div *ngIf="!loading && !error" class="space-y-6">
     <!-- KPI Cards -->
     <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
       <div class="bg-white p-6 rounded-xl shadow border-t-4 border-blue-500">
@@ -73,39 +73,41 @@
     </div>
 
   <!-- Filters -->
-  <div class="bg-white rounded-xl p-6 shadow flex flex-wrap gap-4 items-center">
-    <select class="px-4 py-2 border rounded-md" [(ngModel)]="selectedDrugTypeId">
-      <option [ngValue]="null">All Categories</option>
-      <option *ngFor="let drugType of drugTypes" [ngValue]="drugType.drugTypeId">{{ drugType.drugTypeName }}</option>
-    </select>
-    <input type="date" class="px-4 py-2 border rounded-md"/>
-    <button class="px-4 py-2 bg-gradient-to-r from-tati-burgundy to-[#6B0E2B] text-white rounded-md">
+  <div class="bg-white rounded-xl p-6 shadow flex flex-wrap gap-4 items-end">
+    <div class="flex flex-col">
+      <label class="text-xs text-gray-600 mb-1">Category</label>
+      <select class="px-4 py-2 border rounded-md" [(ngModel)]="selectedDrugTypeId">
+        <option [ngValue]="null">All Categories</option>
+        <option *ngFor="let drugType of drugTypes" [ngValue]="drugType.drugTypeId">{{ drugType.drugTypeName }}</option>
+      </select>
+    </div>
+    <div class="flex flex-col">
+      <label class="text-xs text-gray-600 mb-1">Start Date</label>
+      <input type="date" class="px-4 py-2 border rounded-md" [(ngModel)]="startDate"/>
+    </div>
+    <div class="flex flex-col">
+      <label class="text-xs text-gray-600 mb-1">End Date</label>
+      <input type="date" class="px-4 py-2 border rounded-md" [(ngModel)]="endDate"/>
+    </div>
+    <button class="px-4 py-2 bg-gradient-to-r from-tati-burgundy to-[#6B0E2B] text-white rounded-md h-fit hover:opacity-90 transition-opacity" (click)="applyFilters()">
       <i class="fas fa-filter mr-2"></i> Apply Filters
     </button>
   </div>
 
     <!-- Charts -->
-    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-      <div class="bg-white rounded-xl p-6 shadow border-t-4 border-tati-burgundy">
-        <h3 class="text-lg font-semibold text-tati-burgundy mb-4">Top 10 SKUs by Sales</h3>
-        <div class="chart-container">
-          <canvas #skuChart></canvas>
-        </div>
-      </div>
-      <div class="bg-white rounded-xl p-6 shadow border-t-4 border-tati-gold">
-        <h3 class="text-lg font-semibold text-tati-burgundy mb-4">Product Lifecycle</h3>
-        <div class="chart-container" style="height:380px">
-          <canvas #lifecycleChart></canvas>
-        </div>
+    <div class="bg-white rounded-xl p-6 shadow border-t-4 border-tati-burgundy">
+      <h3 class="text-lg font-semibold text-tati-burgundy mb-4">Top 10 SKUs by Sales</h3>
+      <div class="chart-container">
+        <canvas #skuChart></canvas>
       </div>
     </div>
 
     <!-- Insights Table -->
     <div class="bg-white rounded-xl shadow border-t-4 border-green-500">
       <div class="p-6 border-b">
-        <h3 class="text-lg font-semibold text-tati-burgundy">Product Insights Table</h3>
+        <h3 class="text-lg font-semibold text-tati-burgundy mb-1">Product Insights Table</h3>
       </div>
-      <div class="overflow-x-auto">
+      <div class="overflow-x-auto p-6">
         <table class="w-full text-left" *ngIf="products.length > 0; else noProducts">
           <thead class="bg-gray-100 text-xs uppercase text-gray-600">
             <tr>
@@ -144,12 +146,12 @@
     <!-- AI Recommendations -->
     <div class="bg-white rounded-xl shadow border-t-4 border-blue-500">
       <div class="p-6 border-b">
-        <h3 class="text-lg font-semibold text-tati-burgundy">
+        <h3 class="text-lg font-semibold text-tati-burgundy mb-1">
           <i class="fas fa-robot mr-2 text-blue-500"></i> AI-Based Product Recommendations
         </h3>
-        <p class="text-gray-600 text-sm">AI-driven reorder & demand forecasting</p>
+        <p class="text-gray-600 text-sm mt-1">AI-driven reorder & demand forecasting</p>
       </div>
-      <div class="overflow-x-auto">
+      <div class="overflow-x-auto p-6">
         <table class="w-full text-left" *ngIf="aiRecommendations.length > 0; else noRecommendations">
           <thead class="bg-gray-100 text-xs uppercase text-gray-600">
             <tr>

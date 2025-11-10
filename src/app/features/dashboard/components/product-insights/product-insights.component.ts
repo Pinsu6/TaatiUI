@@ -18,9 +18,7 @@ import { takeUntil } from 'rxjs/operators';
 })
 export class ProductInsightsComponent implements OnInit, OnDestroy {
   @ViewChild('skuChart') skuChartRef!: ElementRef<HTMLCanvasElement>;
-  @ViewChild('lifecycleChart') lifecycleChartRef!: ElementRef<HTMLCanvasElement>;
   private skuChart!: Chart;
-  private lifecycleChart!: Chart;
   private destroy$ = new Subject<void>();
 
   productInsightsData!: ProductInsightsDto;
@@ -28,6 +26,8 @@ export class ProductInsightsComponent implements OnInit, OnDestroy {
   aiRecommendations: AIRecommendation[] = [];
   drugTypes: HelperDrugTypeDto[] = [];
   selectedDrugTypeId: number | null = null;
+  startDate: string = '';
+  endDate: string = '';
   
   loading = true;
   error: string | null = null;
@@ -63,9 +63,6 @@ export class ProductInsightsComponent implements OnInit, OnDestroy {
     if (this.skuChart) {
       this.skuChart.destroy();
     }
-    if (this.lifecycleChart) {
-      this.lifecycleChart.destroy();
-    }
   }
 
   loadProductInsights() {
@@ -93,6 +90,38 @@ export class ProductInsightsComponent implements OnInit, OnDestroy {
 
   refresh() {
     this.loadProductInsights();
+  }
+
+  applyFilters() {
+    const filterData = {
+      drugTypeId: this.selectedDrugTypeId,
+      startDate: this.startDate,
+      endDate: this.endDate
+    };
+
+    console.log('Applying filters:', filterData);
+    
+    this.loading = true;
+    this.error = null;
+    
+    this.analyticsService.getProductInsightsWithFilters(filterData)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (data) => {
+          this.productInsightsData = data;
+          this.updateKPIs(data);
+          this.updateProducts(data);
+          this.updateAIRecommendations(data);
+          this.loading = false;
+          // Reinitialize charts with new data
+          this.initializeChartsWhenReady();
+        },
+        error: (err) => {
+          this.error = err.message || 'Failed to load filtered product insights';
+          this.loading = false;
+          console.error('Error loading filtered product insights:', err);
+        }
+      });
   }
 
   openExportModal() {
@@ -172,7 +201,7 @@ export class ProductInsightsComponent implements OnInit, OnDestroy {
 
   private initializeChartsWhenReady(attempts = 0) {
     const maxAttempts = 10;
-    if (this.skuChartRef && this.lifecycleChartRef && this.productInsightsData) {
+    if (this.skuChartRef && this.productInsightsData) {
       this.initializeCharts();
     } else if (attempts < maxAttempts) {
       setTimeout(() => {
@@ -184,16 +213,13 @@ export class ProductInsightsComponent implements OnInit, OnDestroy {
   }
 
   private initializeCharts() {
-    if (!this.skuChartRef || !this.lifecycleChartRef || !this.productInsightsData) {
+    if (!this.skuChartRef || !this.productInsightsData) {
       return;
     }
 
     // Destroy existing charts if they exist
     if (this.skuChart) {
       this.skuChart.destroy();
-    }
-    if (this.lifecycleChart) {
-      this.lifecycleChart.destroy();
     }
 
     // SKU Chart
@@ -215,41 +241,8 @@ export class ProductInsightsComponent implements OnInit, OnDestroy {
         },
         options: {
           responsive: true,
+          maintainAspectRatio: false,
           plugins: { legend: { display: false } },
-          scales: {
-            y: {
-              ticks: {
-                callback: (v: any) => v.toLocaleString()
-              }
-            }
-          }
-        }
-      });
-    }
-
-    // Lifecycle Chart
-    const lifecycleCtx = this.lifecycleChartRef.nativeElement.getContext('2d');
-    if (lifecycleCtx && this.productInsightsData.lifecycleStages) {
-      const stages = this.productInsightsData.lifecycleStages;
-      const labels = stages.map(stage => stage.stage);
-      const salesData = stages.map(stage => stage.sales);
-
-      this.lifecycleChart = new Chart(lifecycleCtx, {
-        type: 'line',
-        data: {
-          labels: labels,
-          datasets: [{
-            label: 'Sales',
-            data: salesData,
-            borderColor: '#D4AF37',
-            backgroundColor: 'rgba(212,175,55,0.2)',
-            fill: true,
-            tension: 0.3
-          }]
-        },
-        options: {
-          responsive: true,
-          plugins: { legend: { position: 'bottom' } },
           scales: {
             y: {
               ticks: {

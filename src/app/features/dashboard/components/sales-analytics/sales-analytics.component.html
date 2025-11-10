@@ -58,7 +58,7 @@
 
     <!-- Filters -->
     <div class="bg-white rounded-xl p-6 shadow flex flex-wrap gap-4 items-center">
-      <select class="px-4 py-2 border rounded-md">
+      <select class="px-4 py-2 border rounded-md" [(ngModel)]="selectedTimePeriod">
         <option>This Month</option>
         <option>Last Month</option>
         <option>Last 3 Months</option>
@@ -72,7 +72,7 @@
         <option [ngValue]="null">All Products</option>
         <option *ngFor="let product of products" [ngValue]="product.drugId">{{ product.drugName }}</option>
       </select>
-      <button class="px-4 py-2 bg-gradient-to-r from-tati-burgundy to-[#6B0E2B] text-white rounded-md">
+      <button class="px-4 py-2 bg-gradient-to-r from-tati-burgundy to-[#6B0E2B] text-white rounded-md hover:opacity-90 transition-opacity" (click)="applyFilters()">
         <i class="fas fa-filter mr-2"></i> Apply Filters
       </button>
     </div>

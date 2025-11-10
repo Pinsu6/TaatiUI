@@ -89,10 +89,9 @@
       <i class="fas fa-search absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
       <input class="w-full pl-10 pr-4 py-2 border rounded-md" placeholder="Search pharmacies, products, regions...">
     </div>
-    <select class="px-4 py-2 border rounded-md">
-      <option>All Regions</option>
-      <option>Western Area</option>
-      <option>Northern Province</option>
+    <select class="px-4 py-2 border rounded-md" [(ngModel)]="selectedCity">
+      <option [ngValue]="null">All Cities</option>
+      <option *ngFor="let city of cities" [ngValue]="city.cityName">{{ city.cityName }}</option>
     </select>
     <select class="px-4 py-2 border rounded-md" [(ngModel)]="selectedProductId">
       <option [ngValue]="null">All Products</option>
@@ -131,6 +130,18 @@
           <canvas #categoriesChart></canvas>
         </div>
         <div class="mt-4 text-sm text-gray-600">Top categories by revenue share</div>
+        <div class="mt-4 pt-4 border-t">
+          <div class="text-sm font-semibold text-gray-700 mb-3">All Categories:</div>
+          <div class="grid grid-cols-2 gap-2">
+            <div *ngFor="let drugType of drugTypes" 
+                 class="bg-gray-50 border border-gray-200 rounded-lg p-3 text-sm text-gray-700 hover:bg-gray-100 transition-colors">
+              {{ drugType.drugTypeName }}
+            </div>
+            <div *ngIf="drugTypes.length === 0" class="col-span-2 text-gray-500 text-xs text-center py-2">
+              No categories available
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   </div>
