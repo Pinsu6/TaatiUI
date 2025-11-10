@@ -13,9 +13,7 @@ import { CustomerDetailDto } from '../../shared/models/customer-detail-dto.model
 })
 export class CustomerService {
 
- private readonly apiUrl = 'http://localhost:5272/api/customer';
-  // private readonly apiUrl = 'http://localhost:5272/api/customer';
-   //private readonly apiUrl = 'https://api.tatipharma.com/api/customer';
+ private readonly apiUrl = 'https://api.tatipharma.com/api/customer';
     // GET /api/customer with query params
 
   constructor(private http: HttpClient) {}
@@ -108,7 +106,7 @@ export class CustomerService {
   exportCustomers(format: 'pdf' | 'excel' | 'csv', payload: any): Observable<Blob> {
     // PDF export uses different endpoint with capital C
     const baseUrl = format === 'pdf' 
-      ? 'http://localhost:5272/api/Customer'
+      ? 'https://api.tatipharma.com/api/Customer'
       : this.apiUrl;
     const url = `${baseUrl}/export/${format}`;
     return this.http.post(url, payload, { responseType: 'blob' }).pipe(

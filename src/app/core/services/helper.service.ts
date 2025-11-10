@@ -11,9 +11,9 @@ import { HelperCityDto } from '../../shared/models/helper-city-dto.model';
 })
 export class HelperService {
 
-  private readonly productsUrl = 'http://localhost:5272/api/Helper/products';
-  private readonly drugTypesUrl = 'http://localhost:5272/api/Helper/drug-types';
-  private readonly citiesUrl = 'http://localhost:5272/api/Helper/cities';
+  private readonly productsUrl = 'https://api.tatipharma.com/api/Helper/products';
+  private readonly drugTypesUrl = 'https://api.tatipharma.com/api/Helper/drug-types';
+  private readonly citiesUrl = 'https://api.tatipharma.com/api/Helper/cities';
 
   constructor(private http: HttpClient) {}
 

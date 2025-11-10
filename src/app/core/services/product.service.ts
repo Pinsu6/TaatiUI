@@ -13,9 +13,7 @@ import { ProductDetailDto } from '../../shared/models/product-detail-dto.model';
 })
 export class ProductService {
 
- private apiUrl = 'http://localhost:5272/api/products';
-  // private apiUrl = 'http://localhost:5272/api/products';
-  // private apiUrl = 'https://api.tatipharma.com/api/products';
+ private apiUrl = 'https://api.tatipharma.com/api/products';
   
 
   constructor(private http: HttpClient) {}
@@ -86,7 +84,7 @@ getById(id: number): Observable<ProductDetailDto> {
   exportProducts(format: 'pdf' | 'excel' | 'csv', payload: any): Observable<Blob> {
     // Excel and PDF exports use endpoint with capital P
     const baseUrl = (format === 'pdf' || format === 'excel')
-      ? 'http://localhost:5272/api/Products'
+      ? 'https://api.tatipharma.com/api/Products'
       : this.apiUrl;
     const url = `${baseUrl}/export/${format}`;
     return this.http.post(url, payload, { responseType: 'blob' }).pipe(

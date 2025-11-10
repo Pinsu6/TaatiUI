@@ -12,9 +12,7 @@ import { DashboardDto } from '../../shared/models/dashboard-dto.model';
   providedIn: 'root'
 })
 export class AnalyticsService {
-  private readonly apiUrl = 'http://localhost:5272/api/Analytics';
-  // private readonly apiUrl = 'http://localhost:5272/api/Analytics';
-   //private readonly apiUrl = 'https://api.tatipharma.com/api/customer';
+  private readonly apiUrl = 'https://api.tatipharma.com/api/Analytics';
 
   constructor(private http: HttpClient) {}
 
@@ -182,7 +180,7 @@ export class AnalyticsService {
   exportProductInsights(format: 'pdf' | 'excel' | 'csv', payload: any): Observable<Blob> {
     // PDF and Excel exports use the Products endpoint
     const baseUrl = (format === 'pdf' || format === 'excel')
-      ? 'http://localhost:5272/api/Products'
+      ? 'https://api.tatipharma.com/api/Products'
       : `${this.apiUrl}/product-insights`;
     const url = `${baseUrl}/export/${format}`;
     return this.http.post(url, payload, { responseType: 'blob' }).pipe(
