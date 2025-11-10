@@ -180,7 +180,12 @@
         {{ exportErrorMessage }}
       </div>
       <div class="mt-4 text-right">
-        <button (click)="closeExportModal()" class="px-4 py-2 text-sm text-gray-600" [disabled]="isExporting">Close</button>
+        <button
+          (click)="closeExportModal()"
+          class="px-4 py-2 text-sm text-tati-burgundy hover:opacity-80 transition disabled:text-gray-400"
+          [disabled]="isExporting">
+          Close
+        </button>
       </div>
     </div>
   </div>

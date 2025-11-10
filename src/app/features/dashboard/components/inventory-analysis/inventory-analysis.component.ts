@@ -2,7 +2,6 @@ import { Component, ElementRef, ViewChild, OnInit, OnDestroy } from '@angular/co
 import { Router } from '@angular/router';
 import { Chart } from 'chart.js/auto';
 import { AnalyticsService } from '../../../../core/services/analytics.service';
-import { ModalService } from '../../../../core/services/modal.service';
 import { InventoryAnalyticsDto } from '../../../../shared/models/inventory-analytics-dto.model';
 import { StockAlert } from '../../../../shared/models/stock-alert.model';
 import { Subject } from 'rxjs';
@@ -24,6 +23,10 @@ export class InventoryAnalysisComponent implements OnInit, OnDestroy {
   inventoryAnalyticsData!: InventoryAnalyticsDto;
   stockAlerts: StockAlert[] = [];
   
+  showExportModal = false;
+  isExporting = false;
+  exportErrorMessage: string | null = null;
+
   loading = true;
   error: string | null = null;
 
@@ -35,8 +38,7 @@ export class InventoryAnalysisComponent implements OnInit, OnDestroy {
 
   constructor(
     private router: Router,
-    private analyticsService: AnalyticsService,
-    private modalService: ModalService
+    private analyticsService: AnalyticsService
   ) {}
 
   ngOnInit() {
@@ -81,7 +83,44 @@ export class InventoryAnalysisComponent implements OnInit, OnDestroy {
   }
 
   openExportModal() {
-    this.modalService.openExportModal();
+    this.showExportModal = true;
+  }
+
+  closeExportModal() {
+    this.showExportModal = false;
+    this.isExporting = false;
+    this.exportErrorMessage = null;
+  }
+
+  export(format: 'pdf' | 'excel' | 'csv') {
+    const payload = {};
+
+    this.isExporting = true;
+    this.exportErrorMessage = null;
+
+    this.analyticsService.exportInventoryAnalytics(format, payload).subscribe({
+      next: (blob) => {
+        this.downloadFile(blob, format);
+        this.isExporting = false;
+        this.closeExportModal();
+      },
+      error: (error) => {
+        this.exportErrorMessage = error.message || 'Failed to export inventory analytics.';
+        this.isExporting = false;
+      }
+    });
+  }
+
+  private downloadFile(blob: Blob, format: 'pdf' | 'excel' | 'csv'): void {
+    const extension = format === 'excel' ? 'xlsx' : format;
+    const fileName = `inventory-analysis-${new Date().toISOString()}.${extension}`;
+
+    const url = window.URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = fileName;
+    link.click();
+    window.URL.revokeObjectURL(url);
   }
 
   private updateKPIs(data: InventoryAnalyticsDto) {

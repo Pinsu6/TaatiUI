@@ -9,3 +9,8 @@
 .map-container {
   height: 350px;
 }
+
+/* Apply margin to all dashboard cards/boxes */
+#dashboard .bg-white.rounded-xl.shadow {
+  margin: 12px;
+}

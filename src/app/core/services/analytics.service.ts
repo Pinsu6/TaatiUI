@@ -188,6 +188,13 @@ export class AnalyticsService {
     );
   }
 
+  exportInventoryAnalytics(format: 'pdf' | 'excel' | 'csv', payload: any): Observable<Blob> {
+    const url = `${this.apiUrl}/inventory/export/${format}`;
+    return this.http.post(url, payload, { responseType: 'blob' }).pipe(
+      catchError(this.handleError)
+    );
+  }
+
   private handleError(error: HttpErrorResponse): Observable<never> {
     let errorMsg = 'An unexpected error occurred';
     if (error.error instanceof ErrorEvent) {

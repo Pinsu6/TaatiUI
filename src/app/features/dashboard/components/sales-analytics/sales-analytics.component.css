@@ -1,0 +1,5 @@
+/* Apply margin to all cards/boxes within Sales Analytics */
+.bg-white.rounded-xl.shadow {
+  margin: 12px;
+}
+
