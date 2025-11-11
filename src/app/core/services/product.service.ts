@@ -7,13 +7,14 @@ import { ProductFilter } from '../../shared/models/product-filter.model';
 import { ApiResponse } from '../../shared/models/api-response.model';
 import { ProductResponseDto } from '../../shared/models/product-response-dto.model';
 import { ProductDetailDto } from '../../shared/models/product-detail-dto.model';
+import { ApiConfig } from '../config/api.config';
 
 @Injectable({
   providedIn: 'root'
 })
 export class ProductService {
 
- private apiUrl = 'https://api.tatipharma.com/api/products';
+ private apiUrl = ApiConfig.ENDPOINTS.PRODUCT.BASE;
   
 
   constructor(private http: HttpClient) {}
@@ -72,7 +73,7 @@ export class ProductService {
   };
 }
 getById(id: number): Observable<ProductDetailDto> {
-    return this.http.get<ApiResponse<ProductDetailDto>>(`${this.apiUrl}/${id}`).pipe(
+    return this.http.get<ApiResponse<ProductDetailDto>>(ApiConfig.ENDPOINTS.PRODUCT.BY_ID(id)).pipe(
       map(res => {
         if (res.success && res.data) return res.data;
         throw new Error(res.message || 'Product not found');
@@ -83,10 +84,7 @@ getById(id: number): Observable<ProductDetailDto> {
 
   exportProducts(format: 'pdf' | 'excel' | 'csv', payload: any): Observable<Blob> {
     // Excel and PDF exports use endpoint with capital P
-    const baseUrl = (format === 'pdf' || format === 'excel')
-      ? 'https://api.tatipharma.com/api/Products'
-      : this.apiUrl;
-    const url = `${baseUrl}/export/${format}`;
+    const url = ApiConfig.ENDPOINTS.PRODUCT.EXPORT(format, format === 'pdf' || format === 'excel');
     return this.http.post(url, payload, { responseType: 'blob' }).pipe(
       catchError(err => throwError(() => err))
     );

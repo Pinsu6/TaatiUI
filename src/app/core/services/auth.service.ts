@@ -6,13 +6,14 @@ import { catchError, map, Observable, throwError } from 'rxjs';
 import { LoginCredentials } from '../../shared/models/login-credentials.model';
 import { LoginRequest } from '../../shared/models/login-request.model';
 import { ApiResponse } from '../../shared/models/api-response.model';
+import { ApiConfig } from '../config/api.config';
 
 @Injectable({
   providedIn: 'root'
 })
 export class AuthService {
 
- private readonly apiUrl = 'https://api.tatipharma.com/api/auth'; // Base API URL
+ private readonly apiUrl = ApiConfig.ENDPOINTS.AUTH.BASE;
   
   private isAuthenticated = false;
   private readonly tokenKey = 'authToken';
@@ -29,7 +30,7 @@ export class AuthService {
       password: credentials.password
     };
 
-    return this.http.post<ApiResponse<LoginResponse>>(`${this.apiUrl}/login`, request)
+    return this.http.post<ApiResponse<LoginResponse>>(ApiConfig.ENDPOINTS.AUTH.LOGIN, request)
       .pipe(
         map(response => {
           if (response.success && response.data) {

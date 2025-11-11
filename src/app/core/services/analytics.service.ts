@@ -7,12 +7,13 @@ import { AnalyticsDto } from '../../shared/models/analytics-dto.model';
 import { ProductInsightsDto } from '../../shared/models/product-insights-dto.model';
 import { InventoryAnalyticsDto } from '../../shared/models/inventory-analytics-dto.model';
 import { DashboardDto } from '../../shared/models/dashboard-dto.model';
+import { ApiConfig } from '../config/api.config';
 
 @Injectable({
   providedIn: 'root'
 })
 export class AnalyticsService {
-  private readonly apiUrl = 'https://api.tatipharma.com/api/Analytics';
+  private readonly apiUrl = ApiConfig.ENDPOINTS.ANALYTICS.BASE;
 
   constructor(private http: HttpClient) {}
 
@@ -66,7 +67,7 @@ export class AnalyticsService {
   }
 
   getProductInsights(): Observable<ProductInsightsDto> {
-    return this.http.get<ApiResponse<ProductInsightsDto>>(`${this.apiUrl}/product-insights`)
+    return this.http.get<ApiResponse<ProductInsightsDto>>(ApiConfig.ENDPOINTS.ANALYTICS.PRODUCT_INSIGHTS)
       .pipe(
         map(response => {
           if (response.success && response.data) {
@@ -97,7 +98,7 @@ export class AnalyticsService {
       .map(key => `${encodeURIComponent(key)}=${encodeURIComponent(params[key])}`)
       .join('&');
 
-    const url = queryString ? `${this.apiUrl}/product-insights?${queryString}` : `${this.apiUrl}/product-insights`;
+    const url = queryString ? `${ApiConfig.ENDPOINTS.ANALYTICS.PRODUCT_INSIGHTS}?${queryString}` : ApiConfig.ENDPOINTS.ANALYTICS.PRODUCT_INSIGHTS;
 
     console.log('Fetching product insights with URL:', url);
 
@@ -115,7 +116,7 @@ export class AnalyticsService {
   }
 
   getInventoryAnalytics(): Observable<InventoryAnalyticsDto> {
-    return this.http.get<ApiResponse<InventoryAnalyticsDto>>(`${this.apiUrl}/inventory`)
+    return this.http.get<ApiResponse<InventoryAnalyticsDto>>(ApiConfig.ENDPOINTS.ANALYTICS.INVENTORY)
       .pipe(
         map(response => {
           if (response.success && response.data) {
@@ -129,7 +130,7 @@ export class AnalyticsService {
   }
 
   getDashboard(): Observable<DashboardDto> {
-    return this.http.get<ApiResponse<DashboardDto>>(`${this.apiUrl}/dashboard`)
+    return this.http.get<ApiResponse<DashboardDto>>(ApiConfig.ENDPOINTS.ANALYTICS.DASHBOARD)
       .pipe(
         map(response => {
           if (response.success && response.data) {
@@ -160,7 +161,7 @@ export class AnalyticsService {
       .map(key => `${encodeURIComponent(key)}=${encodeURIComponent(params[key])}`)
       .join('&');
 
-    const url = queryString ? `${this.apiUrl}/dashboard?${queryString}` : `${this.apiUrl}/dashboard`;
+    const url = queryString ? `${ApiConfig.ENDPOINTS.ANALYTICS.DASHBOARD}?${queryString}` : ApiConfig.ENDPOINTS.ANALYTICS.DASHBOARD;
 
     console.log('Fetching dashboard with URL:', url);
 
@@ -179,17 +180,14 @@ export class AnalyticsService {
 
   exportProductInsights(format: 'pdf' | 'excel' | 'csv', payload: any): Observable<Blob> {
     // PDF and Excel exports use the Products endpoint
-    const baseUrl = (format === 'pdf' || format === 'excel')
-      ? 'https://api.tatipharma.com/api/Products'
-      : `${this.apiUrl}/product-insights`;
-    const url = `${baseUrl}/export/${format}`;
+    const url = ApiConfig.ENDPOINTS.ANALYTICS.EXPORT_PRODUCT_INSIGHTS(format, format === 'pdf' || format === 'excel');
     return this.http.post(url, payload, { responseType: 'blob' }).pipe(
       catchError(this.handleError)
     );
   }
 
   exportInventoryAnalytics(format: 'pdf' | 'excel' | 'csv', payload: any): Observable<Blob> {
-    const url = `${this.apiUrl}/inventory/export/${format}`;
+    const url = ApiConfig.ENDPOINTS.ANALYTICS.EXPORT_INVENTORY(format);
     return this.http.post(url, payload, { responseType: 'blob' }).pipe(
       catchError(this.handleError)
     );

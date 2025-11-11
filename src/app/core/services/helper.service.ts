@@ -5,15 +5,16 @@ import { ApiResponse } from '../../shared/models/api-response.model';
 import { HelperProductDto } from '../../shared/models/helper-product-dto.model';
 import { HelperDrugTypeDto } from '../../shared/models/helper-drug-type-dto.model';
 import { HelperCityDto } from '../../shared/models/helper-city-dto.model';
+import { ApiConfig } from '../config/api.config';
 
 @Injectable({
   providedIn: 'root'
 })
 export class HelperService {
 
-  private readonly productsUrl = 'https://api.tatipharma.com/api/Helper/products';
-  private readonly drugTypesUrl = 'https://api.tatipharma.com/api/Helper/drug-types';
-  private readonly citiesUrl = 'https://api.tatipharma.com/api/Helper/cities';
+  private readonly productsUrl = ApiConfig.ENDPOINTS.HELPER.PRODUCTS;
+  private readonly drugTypesUrl = ApiConfig.ENDPOINTS.HELPER.DRUG_TYPES;
+  private readonly citiesUrl = ApiConfig.ENDPOINTS.HELPER.CITIES;
 
   constructor(private http: HttpClient) {}
 

@@ -7,14 +7,14 @@ import { CustomerDto } from '../../shared/models/customer-dto.model';
 import { CustomerFilter } from '../../shared/models/customer-filter.model';
 import { PagedResult } from '../../shared/models/paged-result.model';
 import { CustomerDetailDto } from '../../shared/models/customer-detail-dto.model';
+import { ApiConfig } from '../config/api.config';
 
 @Injectable({
   providedIn: 'root'
 })
 export class CustomerService {
 
- private readonly apiUrl = 'https://api.tatipharma.com/api/customer';
-    // GET /api/customer with query params
+ private readonly apiUrl = ApiConfig.ENDPOINTS.CUSTOMER.BASE;
 
   constructor(private http: HttpClient) {}
 
@@ -105,17 +105,14 @@ export class CustomerService {
 
   exportCustomers(format: 'pdf' | 'excel' | 'csv', payload: any): Observable<Blob> {
     // PDF export uses different endpoint with capital C
-    const baseUrl = format === 'pdf' 
-      ? 'https://api.tatipharma.com/api/Customer'
-      : this.apiUrl;
-    const url = `${baseUrl}/export/${format}`;
+    const url = ApiConfig.ENDPOINTS.CUSTOMER.EXPORT(format, format === 'pdf');
     return this.http.post(url, payload, { responseType: 'blob' }).pipe(
       catchError(this.handleError)
     );
   }
 
   getById(id: number): Observable<CustomerDetailDto> {
-  return this.http.get<ApiResponse<CustomerDetailDto>>(`${this.apiUrl}/${id}`)
+  return this.http.get<ApiResponse<CustomerDetailDto>>(ApiConfig.ENDPOINTS.CUSTOMER.BY_ID(id))
     .pipe(
       map(response => {
         if (response.success && response.data) {
