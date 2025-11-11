@@ -77,22 +77,6 @@
     </div>
   </section>
 
-  <!-- ==================== Pricing ==================== -->
-  <section *ngIf="product" class="bg-white border shadow rounded-xl p-6 mb-6">
-    <h3 class="text-lg font-semibold text-tati-burgundy mb-3 border-b border-gray-200 pb-2">Pricing Details</h3>
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-      <div class="space-y-2 text-sm">
-        <p><span class="font-medium text-gray-700">Sale Price:</span> <span class="text-gray-500">SLL {{ (product.pricing?.salePrice || 0) | number }}</span></p>
-        <p><span class="font-medium text-gray-700">Unit Cost:</span> <span class="text-gray-500">SLL {{ (product.pricing?.unitCost || product.unitCost || 0) | number }}</span></p>
-        <p><span class="font-medium text-gray-700">Margin (%):</span> <span class="text-gray-500">{{ (product.pricing?.marginPercent || 0) | number:'1.2-2' }}%</span></p>
-        <p><span class="font-medium text-gray-700">Margin Amount:</span> <span class="text-gray-500">SLL {{ (product.pricing?.marginAmount || product.margin || 0) | number }}</span></p>
-      </div>
-      <div class="space-y-2 text-sm">
-        <p><span class="font-medium text-gray-700">Total Revenue:</span> <span class="text-gray-500">SLL {{ formattedTotalRevenue }}</span></p>
-        <p><span class="font-medium text-gray-700">Turnover Rate:</span> <span class="text-gray-500">N/A</span></p>
-      </div>
-    </div>
-  </section>
 
   <!-- ==================== Manufacturer Details ==================== -->
  <!-- ==================== Manufacturer Details ==================== -->
@@ -156,14 +140,10 @@
     </div>
   </section>
   <!-- ==================== Charts ==================== -->
-  <section *ngIf="product" class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+  <section *ngIf="product" class="mb-6">
     <div class="bg-white p-6 rounded-xl shadow border-t-4 border-tati-burgundy">
       <h3 class="font-semibold text-tati-burgundy mb-4">Monthly Sales Trend</h3>
       <div class="chart-container"><canvas #salesTrend></canvas></div>
-    </div>
-    <div class="bg-white p-6 rounded-xl shadow border-t-4 border-green-500">
-      <h3 class="font-semibold text-green-600 mb-4">Regional Sales Distribution</h3>
-      <div class="chart-container"><canvas #regionSplit></canvas></div>
     </div>
   </section>
   <!-- ==================== Recent Orders ==================== -->

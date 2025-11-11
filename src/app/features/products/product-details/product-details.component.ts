@@ -18,7 +18,6 @@ import { ProductDetailDto } from '../../../shared/models/product-detail-dto.mode
 })
 export class ProductDetailsComponent {
   @ViewChild('salesTrend') salesTrendRef!: ElementRef<HTMLCanvasElement>;
-  @ViewChild('regionSplit') regionSplitRef!: ElementRef<HTMLCanvasElement>;
   product: ProductDetailDto | null = null;
   isLoading = true;
   errorMessage = '';
@@ -37,7 +36,6 @@ export class ProductDetailsComponent {
     { message: 'Discount campaign scheduled for October (Buy 10, Get 1 Free).' }
   ];
   private salesChart!: Chart;
-  private regionChart!: Chart;
   private sub = new Subscription();
   // Pagination state for orders
   pageSizes: number[] = [5, 10, 20, 50];
@@ -61,7 +59,6 @@ export class ProductDetailsComponent {
   ngOnDestroy(): void {
     this.sub.unsubscribe();
     this.salesChart?.destroy();
-    this.regionChart?.destroy();
   }
 
   retry(): void {
@@ -114,17 +111,6 @@ export class ProductDetailsComponent {
       options: { responsive: true, plugins: { legend: { position: 'bottom' } } }
     });
 
-    //really 
-    const rCtx = this.regionSplitRef.nativeElement.getContext('2d')!;
-    this.regionChart = new Chart(rCtx, {
-      type: 'doughnut',
-      data: {
-        labels: ['Freetown','Bo','Kenema','Makeni'],
-        datasets: [{ data: [45,20,25,10],
-          backgroundColor: ['#8B1538','#10B981','#3B82F6','#F59E0B'] }]
-      },
-      options: { responsive: true, plugins: { legend: { position: 'bottom' } } }
-    });
   }
 
   goBack(): void {

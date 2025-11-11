@@ -34,8 +34,8 @@ export class LoginComponent {
             this.router.navigate(['/dashboard']);
           }
         },
-        error: (err) => {
-          this.errorMessage = err.message; // Handles API errors like "Invalid username or password"
+        error: () => {
+          this.errorMessage = 'Invalid username or password';
         }
       });
   }
