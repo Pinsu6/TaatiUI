@@ -1,0 +1,15 @@
+Page: Customers
+Header/Title: Customers
+
+Static data found (not from API):
+- Pagination options: pageSizes = [5, 10, 25, 50, 100]
+- Default selectedStatus = "all"
+- Export payload defaults for CSV:
+  - Uses extreme pageNumber=2147483647, pageSize=100
+  - search fallback 'string'
+  - isActive set true when undefined via payload
+- lastUpdate display uses fixed locale/format
+
+Notes:
+- Customer list is loaded via CustomerService (API). Static items are pagination options, default filters, and export defaults.
+

@@ -1,0 +1,14 @@
+Page: Product Insights
+Header/Title: Product Insights
+
+Static data found (not from API):
+- Chart colors:
+  - SKU bar: background "#8B1538"
+- Formatting helpers:
+  - formatCurrency uses "SLL", "K", "M" suffixes
+  - formatGrowth formats "+x.x%" etc.
+  - formatStatus inserts spaces into camel case ("FastMoving" -> "Fast Moving")
+
+Notes:
+- KPIs, topSkus, products, aiRecommendations are from AnalyticsService (API). Static parts are chart color and formatting strings.
+

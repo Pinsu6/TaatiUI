@@ -4,7 +4,6 @@ import * as L from 'leaflet';
 import { Pharmacy } from '../../../../shared/models/pharmacy.model';
 import { RefreshService } from '../../../../core/services/refresh.service';
 import { AnalyticsService } from '../../../../core/services/analytics.service';
-import { HelperService } from '../../../../core/services/helper.service';
 import { DashboardDto } from '../../../../shared/models/dashboard-dto.model';
 import { TopPharmacyDto } from '../../../../shared/models/top-pharmacy-dto.model';
 import { HelperProductDto } from '../../../../shared/models/helper-product-dto.model';
@@ -50,8 +49,7 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
 
   constructor(
     private refreshService: RefreshService,
-    private analyticsService: AnalyticsService,
-    private helperService: HelperService
+    private analyticsService: AnalyticsService
   ) {
     this.refreshService.refresh$.subscribe(() => {
       if (!this.loading) {
@@ -62,9 +60,6 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
 
   ngOnInit() {
     this.loadDashboard();
-    this.loadProducts();
-    this.loadCities();
-    this.loadDrugTypes();
   }
 
   ngOnDestroy() {
@@ -91,6 +86,16 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
           this.dashboardData = data;
           this.updateKPIs(data);
           this.updatePharmacies(data);
+          // Update products, cities, drugTypes from dashboard API response
+          if (data.products) {
+            this.products = data.products;
+          }
+          if (data.cities) {
+            this.cities = data.cities;
+          }
+          if (data.drugTypes) {
+            this.drugTypes = data.drugTypes;
+          }
           this.loading = false;
           // Initialize charts after data is loaded
           setTimeout(() => {
@@ -124,6 +129,16 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
           this.dashboardData = data;
           this.updateKPIs(data);
           this.updatePharmacies(data);
+          // Update products, cities, drugTypes from dashboard API response
+          if (data.products) {
+            this.products = data.products;
+          }
+          if (data.cities) {
+            this.cities = data.cities;
+          }
+          if (data.drugTypes) {
+            this.drugTypes = data.drugTypes;
+          }
           this.loading = false;
           // Reinitialize charts with new data
           setTimeout(() => {
@@ -244,9 +259,16 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
           plugins: { legend: { position: 'top' } },
           scales: {
             y: {
-              beginAtZero: false,
+              beginAtZero: true,
               ticks: {
-                callback: function(value: any) { return value >= 1000 ? value.toLocaleString() : value; }
+                callback: function(value: any) { 
+                  if (value >= 1000000) {
+                    return (value / 1000000).toFixed(1) + 'M';
+                  } else if (value >= 1000) {
+                    return (value / 1000).toFixed(1) + 'K';
+                  }
+                  return value.toLocaleString(); 
+                }
               }
             }
           }
@@ -256,10 +278,15 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
 
     // Product Categories Chart
     const categoriesCtx = this.categoriesChartRef.nativeElement.getContext('2d');
-    if (categoriesCtx && this.dashboardData.productCategories) {
-      const categories = this.dashboardData.productCategories;
-      const labels = categories.map(item => item.category || 'Uncategorized');
-      const shareData = categories.map(item => item.share);
+    if (categoriesCtx) {
+      // Handle empty productCategories array
+      const categories = this.dashboardData.productCategories || [];
+      const labels = categories.length > 0 
+        ? categories.map(item => item.category || 'Uncategorized')
+        : ['No Data'];
+      const shareData = categories.length > 0 
+        ? categories.map(item => item.share)
+        : [100];
 
       const colors = ['#8B1538', '#D4AF37', '#10B981', '#7C3AED', '#F97316', '#8B5CF6', '#EC4899', '#14B8A6'];
       const backgroundColor = labels.map((_, index) => colors[index % colors.length]);
@@ -276,7 +303,12 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
         },
         options: {
           responsive: true,
-          plugins: { legend: { position: 'bottom' } }
+          plugins: { 
+            legend: { position: 'bottom' },
+            tooltip: {
+              enabled: categories.length > 0
+            }
+          }
         }
       });
     }
@@ -299,8 +331,8 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
     }).addTo(this.map);
 
     // Add markers for top pharmacies or regional performance
+    // Use regional performance data for map markers if available
     if (this.dashboardData.regionalPerformance && this.dashboardData.regionalPerformance.length > 0) {
-      // Use regional performance data for map markers
       this.dashboardData.regionalPerformance.forEach((region, index) => {
         // Default coordinates - in production, you'd geocode the region names
         const lat = 8.4657 + (index * 0.2);
@@ -316,15 +348,18 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
       });
     } else if (this.pharmacies.length > 0) {
       // Fallback to pharmacies if regional data is not available
-      this.pharmacies.forEach(p => {
-        const marker = L.circleMarker([p.lat, p.lon], {
+      this.pharmacies.forEach((p, index) => {
+        // Use pharmacy coordinates or generate default ones
+        const lat = p.lat || (8.4657 + (index * 0.1));
+        const lon = p.lon || (-13.2317 + (index * 0.1));
+        const marker = L.circleMarker([lat, lon], {
           radius: 8,
           fillColor: '#8B1538',
           color: '#fff',
           weight: 1,
           fillOpacity: 0.9
         }).addTo(this.map);
-        marker.bindPopup(`<strong>${p.name}</strong><br/>Revenue: SLL ${p.revenue.toLocaleString()}`);
+        marker.bindPopup(`<strong>${p.name}</strong><br/>Region: ${p.region}<br/>Revenue: SLL ${p.revenue.toLocaleString()}`);
       });
     }
   }
@@ -356,46 +391,7 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
     return `${value.toFixed(1)}%`;
   }
 
-  loadProducts() {
-    this.helperService.getProducts()
-      .pipe(takeUntil(this.destroy$))
-      .subscribe({
-        next: (products) => {
-          this.products = products;
-        },
-        error: (err) => {
-          console.error('Error loading products:', err);
-          // Don't show error to user, just log it
-        }
-      });
-  }
-
-  loadCities() {
-    this.helperService.getCities()
-      .pipe(takeUntil(this.destroy$))
-      .subscribe({
-        next: (cities) => {
-          this.cities = cities;
-        },
-        error: (err) => {
-          console.error('Error loading cities:', err);
-          // Don't show error to user, just log it
-        }
-      });
-  }
-
-  loadDrugTypes() {
-    this.helperService.getDrugTypes()
-      .pipe(takeUntil(this.destroy$))
-      .subscribe({
-        next: (drugTypes) => {
-          this.drugTypes = drugTypes;
-        },
-        error: (err) => {
-          console.error('Error loading drug types:', err);
-          // Don't show error to user, just log it
-        }
-      });
-  }
+  // Products, cities, and drugTypes are now loaded from the dashboard API response
+  // No need for separate API calls
 
 }

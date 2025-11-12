@@ -1,0 +1,16 @@
+Page: Sales Analytics
+Header/Title: Sales Analytics
+
+Static data found (not from API):
+- Default filter values:
+  - selectedTimePeriod = "This Month"
+- Chart color palettes:
+  - Trend Retail: "#8B1538" with rgba(139,21,56,0.2) fill
+  - Trend Wholesale: "#F59E0B" with rgba(245,158,11,0.2) fill
+  - Top products colors: ["#8B1538","#D4AF37","#10B981","#3B82F6","#F97316","#8B5CF6","#EC4899","#14B8A6"]
+- Formatting helpers:
+  - formatCurrency returns "SLL", "K", "M" suffixes
+
+Notes:
+- All KPI, trend, regions, and top products data come from AnalyticsService (API). Static items are only colors/labels and default filters.
+

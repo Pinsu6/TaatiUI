@@ -1,0 +1,13 @@
+Page: Regional Performance
+Header/Title: Regional Performance
+
+Static data found (not from API):
+- Hardcoded regions dataset (name, lat, lon, revenue, growth, city, orders)
+- Map base view: [8.4844, -13.2344], zoom 7
+- Marker and chart colors:
+  - Marker style: fill "#8B1538", stroke "#fff"
+  - Chart colors: ["#8B1538","#10B981","#7C3AED","#D4AF37"]
+
+Notes:
+- Entire page data is currently static; no service/API used.
+

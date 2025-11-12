@@ -1,15 +1,25 @@
 <section class="mx-auto">
+  <!-- Loading / Error -->
+  <div *ngIf="isLoading" class="flex justify-center items-center py-12">
+    <i class="fas fa-spinner fa-spin text-2xl text-tati-burgundy mr-2"></i>
+    <span>Loading customer...</span>
+  </div>
+  <div *ngIf="errorMessage" class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded text-center">
+    {{ errorMessage }}
+    <button (click)="retry()" class="ml-2 underline">Retry</button>
+  </div>
+
   <!-- Profile -->
-  <div class="bg-white border shadow rounded-xl p-6 mb-6">
+  <div *ngIf="customer && !isLoading && !errorMessage" class="bg-white border shadow rounded-xl p-6 mb-6">
     <!-- Header with Name and Back Button -->
     <div class="flex items-center justify-between mb-6">
       <div>
-        <h2 class="text-2xl font-bold text-tati-burgundy">{{ customer?.name || 'Unknown Customer' }}</h2>
-        <p class="text-gray-600 mt-1">Customer ID: #{{ customer?.id || 'N/A' }}</p>
+        <h2 class="text-2xl font-bold text-tati-burgundy">{{ customerName }}</h2>
+        <p class="text-gray-600 mt-1">Customer ID: #{{ customerId }}</p>
         <div class="mt-2">
           <span class="inline-flex px-3 py-1 rounded-full text-sm font-medium"
             [ngClass]="customer?.bitIsActive ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'">
-            {{ customer?.bitIsActive ? 'Active' : 'Inactive' }}
+            {{ customerStatus }}
           </span>
         </div>
       </div>
@@ -31,7 +41,7 @@
             <p><span class="font-medium text-gray-700">Customer Code:</span> <span class="text-gray-500">{{
                 customer?.cusCode || 'N/A' }}</span></p>
             <p><span class="font-medium text-gray-700">Created Date:</span> <span class="text-gray-500">{{
-                customer?.dateCreated || 'N/A' }}</span></p>
+                formatDate(customer?.dateCreated) }}</span></p>
           </div>
         </div>
 
@@ -39,10 +49,8 @@
         <div class="mb-6">
           <h3 class="text-lg font-semibold text-tati-burgundy mb-3 border-b border-gray-200 pb-2">Contact Details</h3>
           <div class="space-y-2 text-sm">
-            <p><span class="font-medium text-gray-700">Email:</span> <span class="text-gray-500">{{ customer?.email ||
+            <p><span class="font-medium text-gray-700">Email:</span> <span class="text-gray-500">{{ customer?.cusEmail ||
                 'N/A' }}</span></p>
-            <p><span class="font-medium text-gray-700">Primary Phone:</span> <span class="text-gray-500">{{
-                customer?.phone || 'N/A' }}</span></p>
             <p><span class="font-medium text-gray-700">Mobile:</span> <span class="text-gray-500">{{
                 customer?.cusMobileno || 'N/A' }}</span></p>
             <p><span class="font-medium text-gray-700">Office Phone:</span> <span class="text-gray-500">{{
@@ -78,14 +86,14 @@
         <div class="mb-6">
           <h3 class="text-lg font-semibold text-tati-burgundy mb-3 border-b border-gray-200 pb-2">Financial Details</h3>
           <div class="space-y-2 text-sm">
-            <p><span class="font-medium text-gray-700">Credit Limit:</span> <span class="text-gray-500">₹{{
-                customer?.creditlim?.toLocaleString() || 'N/A' }}</span></p>
+            <p><span class="font-medium text-gray-700">Credit Limit:</span> <span class="text-gray-500">{{
+                formatCurrency(customer?.creditlim || 0) }}</span></p>
             <p><span class="font-medium text-gray-700">Credit Days:</span> <span class="text-gray-500">{{
                 customer?.creditdays || 'N/A' }}</span></p>
-            <p><span class="font-medium text-gray-700">Store Amount Remaining:</span> <span class="text-gray-500">₹{{
-                customer?.storeAmtremain?.toLocaleString() || '0' }}</span></p>
-            <p><span class="font-medium text-gray-700">Store Amount Used:</span> <span class="text-gray-500">₹{{
-                customer?.storeAmtused?.toLocaleString() || '0' }}</span></p>
+            <p><span class="font-medium text-gray-700">Store Amount Remaining:</span> <span class="text-gray-500">{{
+                formatCurrency(customer?.storeAmtremain || 0) }}</span></p>
+            <p><span class="font-medium text-gray-700">Store Amount Used:</span> <span class="text-gray-500">{{
+                formatCurrency(customer?.storeAmtused || 0) }}</span></p>
           </div>
         </div>
 
@@ -99,7 +107,7 @@
             <p><span class="font-medium text-gray-700">License Type:</span> <span class="text-gray-500">{{
                 customer?.licenseType || 'N/A' }}</span></p>
             <p><span class="font-medium text-gray-700">Expiry Date:</span> <span class="text-gray-500">{{
-                customer?.licenseExpiry || 'N/A' }}</span></p>
+                formatDate(customer?.licenseExpiry) }}</span></p>
           </div>
         </div>
 
@@ -113,7 +121,7 @@
               <span class="text-gray-500">{{ customer?.customerType?.bitIsActive ? 'Yes' : 'No' }}</span>
             </p>
             <p><span class="font-medium text-gray-700">Created:</span> <span class="text-gray-500">{{
-                customer?.customerType?.dateCreated || 'N/A' }}</span></p>
+                formatDate(customer?.customerType?.dateCreated) }}</span></p>
           </div>
         </div>
 
@@ -136,7 +144,7 @@
             <p><span class="font-medium text-gray-700">Employee Type:</span> <span class="text-gray-500">{{
                 customer?.employee?.empType || 'N/A' }}</span></p>
             <p><span class="font-medium text-gray-700">Start Date:</span> <span class="text-gray-500">{{
-                customer?.employee?.empStartDate || 'N/A' }}</span></p>
+                formatDate(customer?.employee?.empStartDate) }}</span></p>
             <p><span class="font-medium text-gray-700">Active:</span>
               <span class="text-gray-500">{{ customer?.employee?.bitIsActive ? 'Yes' : 'No' }}</span>
             </p>
@@ -147,18 +155,18 @@
   </div>
 
   <!-- KPIs -->
-  <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-6">
+  <div *ngIf="customer" class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-6">
     <div class="bg-white p-6 rounded-xl shadow border-t-4 border-tati-burgundy">
       <h3 class="text-gray-500">Total Orders</h3>
       <p class="text-2xl font-bold text-tati-burgundy">{{ customer?.totalOrders || 0 }}</p>
     </div>
     <div class="bg-white p-6 rounded-xl shadow border-t-4 border-green-500">
       <h3 class="text-gray-500">Lifetime Value</h3>
-      <p class="text-2xl font-bold text-green-600">₹{{ customer?.lifetimeValue?.toLocaleString() || '0' }}</p>
+      <p class="text-2xl font-bold text-green-600">{{ formatCurrency(customer?.lifetimeValue || 0) }}</p>
     </div>
     <div class="bg-white p-6 rounded-xl shadow border-t-4 border-blue-500">
       <h3 class="text-gray-500">Last Purchase</h3>
-      <p class="text-2xl font-bold text-blue-600">{{ customer?.lastPurchase || 'N/A' }}</p>
+      <p class="text-2xl font-bold text-blue-600">{{ formatDate(customer?.lastPurchase) }}</p>
     </div>
     <div class="bg-white p-6 rounded-xl shadow border-t-4 border-yellow-500">
       <h3 class="text-gray-500">Active Policies</h3>
@@ -167,7 +175,7 @@
   </div>
 
   <!-- Charts -->
-  <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+  <div *ngIf="customer" class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
     <div class="bg-white p-6 rounded-xl shadow border-t-4 border-tati-burgundy">
       <h3 class="font-semibold text-tati-burgundy mb-4">Purchase Trend</h3>
       <div class="chart-container">
@@ -183,7 +191,7 @@
   </div>
 
   <!-- Orders Table -->
-  <div class="bg-white rounded-xl shadow border-t-4 border-blue-500 mb-6">
+  <div *ngIf="customer" class="bg-white rounded-xl shadow border-t-4 border-blue-500 mb-6">
     <div class="p-6 border-b">
       <h3 class="font-semibold text-blue-600">Order History</h3>
     </div>
@@ -201,9 +209,9 @@
         <tbody class="divide-y">
           <tr *ngFor="let order of customer?.orderHistory || []">
             <td class="px-6 py-3">{{ order.orderId }}</td>
-            <td class="px-6 py-3">{{ order.date }}</td>
-            <td class="px-6 py-3">{{ order.items }}</td>
-            <td class="px-6 py-3">₹{{ order.total.toLocaleString() }}</td>
+            <td class="px-6 py-3">{{ order.date | date:'medium' }}</td>
+            <td class="px-6 py-3">{{ order.items | number }}</td>
+            <td class="px-6 py-3">{{ formatOrderTotal(order.total) }}</td>
             <td class="px-6 py-3" [ngClass]="order.status === 'Delivered' ? 'text-green-600' : 'text-yellow-600'">
               {{ order.status }}
             </td>
@@ -217,18 +225,16 @@
   </div>
 
   <!-- Engagement -->
-  <div class="bg-white rounded-xl shadow border-t-4 border-yellow-500">
+  <div *ngIf="customer" class="bg-white rounded-xl shadow border-t-4 border-yellow-500">
     <div class="p-6 border-b">
       <h3 class="font-semibold text-yellow-600">Engagement</h3>
     </div>
     <div class="p-6">
       <ul class="list-disc ml-5 text-gray-700">
-        <!-- <li *ngFor="let engagement of customer?.engagement || []">
-          {{ engagement.type }} ({{ engagement.date }}) — {{ engagement.status }}
-        </li>
-        <li *ngIf="!customer?.engagement?.length" class="text-gray-600">No engagement records found.</li> -->
         <li *ngFor="let engagement of customer?.engagement || []">
-          {{ engagement.type }} ({{ engagement.date }}) — {{ engagement.status }}
+          <span class="font-medium">{{ engagement.type }}</span> - 
+          <span>{{ engagement.date | date:'medium' }}</span> — 
+          <span [ngClass]="engagement.status === 'Completed' ? 'text-green-600' : 'text-yellow-600'">{{ engagement.status }}</span>
         </li>
         <li *ngIf="!customer?.engagement?.length" class="text-gray-600">No engagement records found.</li>
       </ul>

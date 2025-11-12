@@ -1,0 +1,19 @@
+Page: Dashboard
+Header/Title: Dashboard
+
+Static data found (not from API):
+- Default filter values:
+  - selectedTimePeriod = "Last 30 days"
+- Map coordinates used as placeholders (no API lat/lon):
+  - Default base view: [8.4844, -13.2344], zoom 7
+  - Top pharmacies markers use computed offsets from 8.4657, -13.2317
+- Chart color palettes:
+  - Revenue (Retail): borderColor "#8B1538", gradient rgba(139,21,56,...) 
+  - Revenue (Wholesale): borderColor "#F59E0B", gradient rgba(245,158,11,...)
+  - Categories chart colors: ["#8B1538","#D4AF37","#10B981","#7C3AED","#F97316","#8B5CF6","#EC4899","#14B8A6"]
+- Formatting helpers:
+  - formatCurrency/formatGrowth return formatted strings with "SLL", "K", "M", "%" literals
+
+Notes:
+- All KPI and series data are loaded via AnalyticsService (API). Only display colors, formatting strings, and default filters/coords are static.
+

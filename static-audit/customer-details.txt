@@ -1,0 +1,17 @@
+Page: Customer Details
+Header/Title: Customer Details
+
+Static data found (not from API):
+- Chart demo data (until API-backed trend/category plugged):
+  - Purchase Trend initial labels: ['Apr','May','Jun','Jul','Aug','Sep']
+  - Purchase Trend initial data: [12000,15000,10000,18000,16000,20000]
+  - Category Split labels: ['Antibiotics','Pain Relief','Vitamins','Others']
+  - Category Split data: [45,25,20,10]
+- Chart color palettes:
+  - Line color "#8B1538" with gradient fill
+  - Doughnut colors ['#8B1538','#10B981','#3B82F6','#F59E0B']
+- Helper method getMonthName has static month names mapping
+
+Notes:
+- Core customer detail fields are loaded via CustomerService.getById (API). Charts initialize with static demo data and later update from API if available.
+

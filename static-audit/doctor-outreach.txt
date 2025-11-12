@@ -1,0 +1,11 @@
+Page: Doctor Outreach
+Header/Title: Doctor Outreach
+
+Static data found (not from API):
+- Hardcoded doctors array with sample names, specialization, contact, order stats, AI suggestions
+- Filtering/sorting applied over the same hardcoded list
+- Action handlers use alert() placeholders (no API)
+
+Notes:
+- Entire dataset is static in the component; no service/API used.
+

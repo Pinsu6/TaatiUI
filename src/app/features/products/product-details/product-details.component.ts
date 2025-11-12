@@ -21,22 +21,10 @@ export class ProductDetailsComponent {
   product: ProductDetailDto | null = null;
   isLoading = true;
   errorMessage = '';
-  orders: any[] = [
-    { orderId: '#ORD145', date: '18-Sep-2025', customer: 'Sunrise Pharmacy', quantity: 250, total: 'SLL 12,500' },
-    { orderId: '#ORD143', date: '15-Sep-2025', customer: 'Good Health Store', quantity: 180, total: 'SLL 9,000' },
-    { orderId: '#ORD138', date: '10-Sep-2025', customer: 'City Medics', quantity: 120, total: 'SLL 6,000' }
-  ];
-  stockMovements: any[] = [
-    { date: 'Sep 15, 2025', description: '+5,000 units restocked' },
-    { date: 'Sep 10, 2025', description: '-1,200 units sold' },
-    { date: 'Aug 25, 2025', description: '-800 units sold' }
-  ];
-  alerts: any[] = [
-    { message: 'High demand detected — Consider increasing stock in October.' },
-    { message: 'Discount campaign scheduled for October (Buy 10, Get 1 Free).' }
-  ];
   private salesChart!: Chart;
   private sub = new Subscription();
+  private chartInitAttempts = 0;
+  private readonly MAX_CHART_INIT_ATTEMPTS = 10;
   // Pagination state for orders
   pageSizes: number[] = [5, 10, 20, 50];
   pageSize = 10;
@@ -53,7 +41,10 @@ export class ProductDetailsComponent {
   }
 
   ngAfterViewInit(): void {
-    this.initCharts(); // dummy charts – you can replace data later
+    // Initialize charts after view is initialized
+    setTimeout(() => {
+      this.initCharts();
+    }, 100);
   }
 
   ngOnDestroy(): void {
@@ -74,6 +65,8 @@ export class ProductDetailsComponent {
         next: (dto: ProductDetailDto) => {
           this.product = dto;
           this.isLoading = false;
+          // Update chart after product data is loaded
+          this.updateChart();
         },
         error: err => {
           this.errorMessage = err.message || 'Failed to load product';
@@ -85,6 +78,10 @@ export class ProductDetailsComponent {
 
   // NEW: Safe getters for template computations (fixes NG2 errors)
   get totalRevenue(): number {
+    // Use API value if available, otherwise calculate
+    if (this.product?.totalRevenue !== undefined && this.product.totalRevenue !== null) {
+      return this.product.totalRevenue;
+    }
     if (!this.product?.stockSummary || !this.product.pricing) return 0;
     return (this.product.stockSummary.totalSold || 0) * (this.product.pricing.salePrice || 0);
   }
@@ -97,20 +94,117 @@ export class ProductDetailsComponent {
     return (this.totalRevenue / 1000000).toFixed(2) + 'M';
   }
 
+  get turnoverRate(): number {
+    return this.product?.turnoverRate || 0;
+  }
+
+  get formattedTurnoverRate(): string {
+    if (this.turnoverRate === 0) return 'N/A';
+    return this.turnoverRate.toFixed(2);
+  }
+
+  get orders(): any[] {
+    return this.product?.recentOrders || [];
+  }
+
+  get stockMovements(): any[] {
+    return this.product?.stockMovements || [];
+  }
+
+  get alerts(): any[] {
+    return this.product?.alerts || [];
+  }
+
+  formatOrderTotal(total: any): string {
+    if (typeof total === 'number') {
+      return 'SLL ' + total.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    }
+    return total || 'N/A';
+  }
+
   /* ----------------------------------------------------- */
   private initCharts(): void {
-    // ---- Sales Trend (dummy) ----
-    const sCtx = this.salesTrendRef.nativeElement.getContext('2d')!;
+    if (!this.salesTrendRef?.nativeElement) {
+      // Try again after a short delay, but limit attempts
+      if (this.chartInitAttempts < this.MAX_CHART_INIT_ATTEMPTS) {
+        this.chartInitAttempts++;
+        setTimeout(() => this.initCharts(), 100);
+      }
+      return;
+    }
+    
+    // Reset attempts counter on success
+    this.chartInitAttempts = 0;
+    
+    // Destroy existing chart if it exists
+    if (this.salesChart) {
+      this.salesChart.destroy();
+    }
+    
+    // ---- Sales Trend ----
+    const sCtx = this.salesTrendRef.nativeElement.getContext('2d');
+    if (!sCtx) {
+      console.error('Could not get canvas context for chart');
+      return;
+    }
+    
     this.salesChart = new Chart(sCtx, {
       type: 'line',
       data: {
-        labels: ['Apr','May','Jun','Jul','Aug','Sep'],
-        datasets: [{ label: 'Units Sold', data: [1800,2200,2000,2500,2300,2650],
-          borderColor: '#8B1538', backgroundColor: 'rgba(139,21,56,0.2)', fill: true, tension: 0.3 }]
+        labels: [],
+        datasets: [{ 
+          label: 'Sales Amount', 
+          data: [],
+          borderColor: '#8B1538', 
+          backgroundColor: 'rgba(139,21,56,0.2)', 
+          fill: true, 
+          tension: 0.3 
+        }]
       },
-      options: { responsive: true, plugins: { legend: { position: 'bottom' } } }
+      options: { 
+        responsive: true, 
+        plugins: { legend: { position: 'bottom' } },
+        scales: {
+          y: {
+            beginAtZero: true
+          }
+        }
+      }
     });
+    
+    // Update chart with data if product is already loaded
+    if (this.product?.monthlySalesTrend) {
+      this.updateChart();
+    }
+  }
 
+  private updateChart(): void {
+    if (!this.product?.monthlySalesTrend) return;
+    
+    // Initialize chart if not already initialized
+    if (!this.salesChart) {
+      if (this.salesTrendRef?.nativeElement) {
+        this.initCharts();
+        return; // initCharts will call updateChart if product data is available
+      }
+      // If ViewChild is not available, wait a bit and try again
+      setTimeout(() => {
+        if (this.salesTrendRef?.nativeElement && !this.salesChart) {
+          this.initCharts();
+        } else if (this.salesChart) {
+          this.updateChart();
+        }
+      }, 100);
+      return;
+    }
+    
+    const trendData = this.product.monthlySalesTrend;
+    const labels = trendData.map(item => item.month);
+    const data = trendData.map(item => item.amount);
+    
+    this.salesChart.data.labels = labels;
+    this.salesChart.data.datasets[0].data = data;
+    this.salesChart.update('none'); // Use 'none' mode for smoother updates
   }
 
   goBack(): void {
@@ -119,7 +213,7 @@ export class ProductDetailsComponent {
 
   /* =================== Orders Pagination (match customers) =================== */
   get totalCount(): number {
-    return this.orders?.length || 0;
+    return this.orders.length || 0;
   }
 
   get totalPages(): number {

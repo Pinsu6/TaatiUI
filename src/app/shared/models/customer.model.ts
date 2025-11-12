@@ -39,11 +39,18 @@ employee: Employee | null | undefined;
   // orderHistory: Order[];
   // engagement: Engagement[];
   totalOrders: number;
-lifetimeValue: number;
-lastPurchase: string;
-activePolicies: number;
-orderHistory: OrderSummaryDto[];
-engagement: EngagementDto[];
-purchaseTrendData?: { month: number; total: number }[];
+  lifetimeValue: number;
+  lastPurchase: string;
+  activePolicies: number;
+  orderHistory: OrderSummaryDto[];
+  engagement: EngagementDto[];
+  purchaseTrend?: Array<{
+    month: string;
+    amount: number;
+  }>;
+  categorySplit?: Array<{
+    category: string;
+    amount: number;
+  }>;
 }
 

@@ -1,0 +1,11 @@
+Page: WhatsApp Campaigns
+Header/Title: WhatsApp Campaigns
+
+Static data found (not from API):
+- Hardcoded historyData array of Notification entries (date, type, audience, message, status)
+- aiSuggest sets a fixed suggestion message with emojis
+- sendNow uses alert() placeholder (no API)
+
+Notes:
+- Entire dataset and actions are static; no service/API used.
+

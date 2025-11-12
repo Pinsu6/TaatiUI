@@ -11,7 +11,7 @@ export interface ProductDetailDto {
   drugQuickcode: string;
   drugName: string;
   drugShort: string;
-  strength: string;
+  strength: string | null;
   brandName: string;
   quantityPack: string;
   maxLevel: number;
@@ -31,9 +31,9 @@ export interface ProductDetailDto {
   drugTypeId: number;
   dosageId: number;
   manufacturerId: number;
-  udiId: number;
-  uomId: number;
-  taxDetailsId: number;
+  udiId: number | null;
+  uomId: number | null;
+  taxDetailsId: number | null;
   taxid: number;
   drugTypeMaster?: DrugTypeMasterDto;  // Optional (nested)
   dosageForm?: DosageFormDto;          // Optional (nested)
@@ -43,6 +43,7 @@ export interface ProductDetailDto {
     totalSold: number;
     currentStock: number;
     minLevel: number;
+    maxLevel: number;
     isLowStock: boolean;
     isOutOfStock: boolean;
   };
@@ -60,4 +61,31 @@ export interface ProductDetailDto {
   };
   isNarcotic: boolean;
   isActive: boolean;
+  totalRevenue?: number;
+  turnoverRate?: number;
+  monthlySalesTrend?: Array<{
+    month: string;
+    amount: number;
+  }>;
+  regionalSales?: Array<{
+    region: string;
+    amount: number;
+    quantity: number;
+  }>;
+  recentOrders?: Array<{
+    orderId: string;
+    date: string;
+    customer: string;
+    quantity: number;
+    total: number;
+  }>;
+  stockMovements?: Array<{
+    date: string;
+    description: string;
+    quantity: number;
+    type: string;
+  }>;
+  alerts?: Array<{
+    message: string;
+  }>;
 }

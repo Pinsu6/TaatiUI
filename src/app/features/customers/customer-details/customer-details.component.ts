@@ -1,15 +1,9 @@
 import { Component, ElementRef, ViewChild } from '@angular/core';
 import { Chart } from 'chart.js/auto';
-import { Customer } from '../../../shared/models/customer.model';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Subscription } from 'rxjs';
 import { CustomerService } from '../../../core/services/customer.service';
 import { CustomerDetailDto } from '../../../shared/models/customer-detail-dto.model';
-import { EmployeeDto } from '../../../shared/models/employee-dto.model';
-import { Employee } from '../../../shared/models/employee.model';
-import { CustomerTypeDto } from '../../../shared/models/customer-type-dto.model';
-import { CustomerType } from '../../../shared/models/customer-type.model';
-import { DatePipe } from '@angular/common';
 
 @Component({
   selector: 'app-customer-details',
@@ -21,10 +15,14 @@ export class CustomerDetailsComponent {
    @ViewChild('purchaseTrend') purchaseTrendRef!: ElementRef<HTMLCanvasElement>;
   @ViewChild('categorySplit') categorySplitRef!: ElementRef<HTMLCanvasElement>;
 
-  customer: Customer | null = null;
+  customer: CustomerDetailDto | null = null;
+  isLoading = true;
+  errorMessage = '';
   private purchaseTrendChart!: Chart;
   private categorySplitChart!: Chart;
   private subscription!: Subscription;
+  private chartInitAttempts = 0;
+  private readonly MAX_CHART_INIT_ATTEMPTS = 10;
 
   constructor(
     private route: ActivatedRoute,
@@ -40,120 +38,117 @@ export class CustomerDetailsComponent {
   }
 
   ngAfterViewInit(): void {
-    this.initCharts();
+    // Initialize charts after view is initialized
+    setTimeout(() => {
+      this.initCharts();
+      // Update charts if customer is already loaded
+      if (this.customer) {
+        this.updateCharts();
+      }
+    }, 100);
   }
 
   ngOnDestroy(): void {
     if (this.subscription) {
       this.subscription.unsubscribe();
     }
+    if (this.purchaseTrendChart) {
+      this.purchaseTrendChart.destroy();
+    }
+    if (this.categorySplitChart) {
+      this.categorySplitChart.destroy();
+    }
   }
 
   private loadCustomer(id: number): void {
+    this.isLoading = true;
+    this.errorMessage = '';
     this.subscription = this.customerService.getById(id).subscribe({
       next: (detail: CustomerDetailDto) => {
-        this.customer = this.mapToCustomer(detail);
-        this.updateCharts();  // Update charts if needed with real data
+        this.customer = detail;
+        this.isLoading = false;
+        // Update charts after data is loaded
+        setTimeout(() => {
+          this.updateCharts();
+        }, 100);
       },
       error: (err) => {
         console.error('Error loading customer:', err);
-        // Handle error (e.g., show message or redirect)
+        this.errorMessage = err.message || 'Failed to load customer';
+        this.isLoading = false;
       }
     });
   }
 
-  private mapToCustomer(dto: CustomerDetailDto): Customer {
-    return {
-      id: dto.customerId,
-      cusCode: dto.cusCode || '',
-      name: `${dto.cusFirstname || ''} ${dto.cusLastname || ''}`.trim() || 'Unknown',
-      email: dto.cusEmail || '',
-      phone: dto.cusMobileno || '',
-      status: dto.bitIsActive ? 'active' : 'inactive',
-      company: dto.customerType?.cusTypeName || '',  // Use CustomerType as company proxy
-      address: dto.address || '',
-      cusMobileno: dto.cusMobileno || '',
-      cusPhonenoO: dto.cusPhonenoO || '',
-      cusPhonenoR: dto.cusPhonenoR || '',
-      city: dto.city || '',
-      district: dto.district || '',
-      country: dto.country || '',
-      pin: dto.pin || '',
-      region: dto.region || '',
-      pbsllicense: dto.pbsllicense || '',
-      licenseType: dto.licenseType || '',
-      licenseExpiry: dto.licenseExpiry || null,
-      creditlim: dto.creditlim || 0,
-      creditdays: dto.creditdays || 0,
-      dateCreated: dto.dateCreated || '',
-      bitIsActive: dto.bitIsActive,
-      storeAmtremain: dto.storeAmtremain || 0,
-      storeAmtused: dto.storeAmtused || 0,
-      customerType: this.mapCustomerType(dto.customerType),
-    employee: this.mapEmployee(dto.employee),
-      // Real from API
-    totalOrders: dto.totalOrders || 0,
-    lifetimeValue: dto.lifetimeValue || 0,
-    lastPurchase: dto.lastPurchase || 'N/A',
-    activePolicies: dto.openInvoices || 0,
-    orderHistory: dto.orderHistory || [],
-    engagement: dto.engagement || [],  // Or dto.paymentHistory if preferred
-    purchaseTrendData: dto.purchaseTrendData || []
-    };
+  // Getters for template
+  get customerName(): string {
+    if (!this.customer) return 'Unknown Customer';
+    return `${this.customer.cusFirstname || ''} ${this.customer.cusLastname || ''}`.trim() || 'Unknown Customer';
   }
-  private getMonthName(month: number): string {
-  const names = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-  return names[month - 1] || 'Month ' + month;
-}
-  private mapCustomerType(dto: CustomerTypeDto | null | undefined): CustomerType | null {
-  if (!dto) return null;
-  return {
-    cusTypeId: dto.cusTypeId,
-    cusTypeName: dto.cusTypeName,
-    bitIsActive: dto.bitIsActive ?? null,
-    dateCreated: dto.dateCreated ?? null,
-    bitIsDelete: dto.bitIsDelete ?? null
-  };
-}
 
-private mapEmployee(dto: EmployeeDto | null | undefined): Employee | null {
-  if (!dto) return null;
-  return {
-    employeeId: dto.employeeId,
-    employeeName: dto.employeeName,
-    empShort: dto.empShort,
-    empPerson: dto.empPerson ?? null,
-    empPosition: dto.empPosition ?? null,
-    empEmail: dto.empEmail ?? null,
-    empMobile: dto.empMobile ?? null,
-    empAddress: dto.empAddress ?? null,
-    empType: dto.empType ?? null,
-    bitIsActive: dto.bitIsActive ?? null,
-    dateCreated: dto.dateCreated ?? null,
-    bitIsDelete: dto.bitIsDelete ?? null,
-    empPassword: dto.empPassword ?? null,
-    bintUserId: dto.bintUserId ?? null,
-    empStartDate: dto.empStartDate ?? null
-  };
-}
+  get customerId(): number {
+    return this.customer?.customerId || 0;
+  }
+
+  get customerStatus(): string {
+    return this.customer?.bitIsActive ? 'Active' : 'Inactive';
+  }
+
+  retry(): void {
+    if (this.customer?.customerId) {
+      this.loadCustomer(this.customer.customerId);
+    }
+  }
+  formatOrderTotal(total: number): string {
+    return 'SLL ' + total.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  }
+
+  formatCurrency(amount: number): string {
+    return 'SLL ' + amount.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  }
+
+  formatDate(date: string | null | undefined): string {
+    if (!date) return 'N/A';
+    return new Date(date).toLocaleDateString('en-US', { 
+      year: 'numeric', 
+      month: 'short', 
+      day: 'numeric' 
+    });
+  }
 
   private initCharts(): void {
-    // Purchase Trend Chart (dummy data)
+    if (!this.purchaseTrendRef?.nativeElement || !this.categorySplitRef?.nativeElement) {
+      if (this.chartInitAttempts < this.MAX_CHART_INIT_ATTEMPTS) {
+        this.chartInitAttempts++;
+        setTimeout(() => this.initCharts(), 100);
+      }
+      return;
+    }
+    
+    // Reset attempts counter on success
+    this.chartInitAttempts = 0;
+
+    // Purchase Trend Chart
     const purchaseTrendCtx = this.purchaseTrendRef.nativeElement.getContext('2d');
-    this.purchaseTrendChart = new Chart(purchaseTrendCtx!, {
+    if (!purchaseTrendCtx) {
+      console.error('Could not get canvas context for purchase trend chart');
+      return;
+    }
+
+    // Destroy existing chart if it exists
+    if (this.purchaseTrendChart) {
+      this.purchaseTrendChart.destroy();
+    }
+
+    this.purchaseTrendChart = new Chart(purchaseTrendCtx, {
       type: 'line',
       data: {
-        labels: ['Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep'],
+        labels: [],
         datasets: [{
-          label: 'Monthly Spend (₹)',
-          data: [12000, 15000, 10000, 18000, 16000, 20000],
+          label: 'Monthly Spend (SLL)',
+          data: [],
           borderColor: '#8B1538',
-          backgroundColor: (ctx: any) => {
-            const gradient = ctx.chart.ctx.createLinearGradient(0, 0, 0, 400);
-            gradient.addColorStop(0, 'rgba(139,21,56,0.2)');
-            gradient.addColorStop(1, 'rgba(139,21,56,0)');
-            return gradient;
-          },
+          backgroundColor: 'rgba(139,21,56,0.2)',
           fill: true,
           tension: 0.3,
           borderWidth: 2,
@@ -165,23 +160,35 @@ private mapEmployee(dto: EmployeeDto | null | undefined): Employee | null {
         plugins: { legend: { position: 'top' } },
         scales: {
           y: {
-            beginAtZero: false,
+            beginAtZero: true,
             ticks: {
-              callback: function(value: any) { return value >= 1000 ? value.toLocaleString() : value; }
+              callback: function(value: any) { 
+                return value >= 1000 ? value.toLocaleString() : value; 
+              }
             }
           }
         }
       }
     });
 
-    // Category Split Chart (dummy data)
+    // Category Split Chart
     const categorySplitCtx = this.categorySplitRef.nativeElement.getContext('2d');
-    this.categorySplitChart = new Chart(categorySplitCtx!, {
+    if (!categorySplitCtx) {
+      console.error('Could not get canvas context for category split chart');
+      return;
+    }
+
+    // Destroy existing chart if it exists
+    if (this.categorySplitChart) {
+      this.categorySplitChart.destroy();
+    }
+
+    this.categorySplitChart = new Chart(categorySplitCtx, {
       type: 'doughnut',
       data: {
-        labels: ['Antibiotics', 'Pain Relief', 'Vitamins', 'Others'],
+        labels: [],
         datasets: [{
-          data: [45, 25, 20, 10],
+          data: [],
           backgroundColor: ['#8B1538', '#10B981', '#3B82F6', '#F59E0B'],
           hoverOffset: 6
         }]
@@ -191,22 +198,53 @@ private mapEmployee(dto: EmployeeDto | null | undefined): Employee | null {
         plugins: { legend: { position: 'bottom' } }
       }
     });
+
+    // Update charts if customer data is already loaded
+    if (this.customer) {
+      this.updateCharts();
+    }
   }
 
   private updateCharts(): void {
-  const trendData = this.customer?.purchaseTrendData || [];
-  if (trendData.length > 0) {
-    const sorted = [...trendData].sort((a: any, b: any) => a.month - b.month);
-    const labels = sorted.map((d: any) => this.getMonthName(d.month));
-    const data = sorted.map((d: any) => d.total);
+    // Update Purchase Trend Chart
+    if (this.customer?.purchaseTrend && this.customer.purchaseTrend.length > 0) {
+      const trendData = this.customer.purchaseTrend;
+      const labels = trendData.map(item => item.month);
+      const data = trendData.map(item => item.amount);
 
-    this.purchaseTrendChart.data.labels = labels;
-    this.purchaseTrendChart.data.datasets[0].data = data;
-    this.purchaseTrendChart.update();
+      if (this.purchaseTrendChart) {
+        this.purchaseTrendChart.data.labels = labels;
+        this.purchaseTrendChart.data.datasets[0].data = data;
+        this.purchaseTrendChart.update('none');
+      }
+    }
+
+    // Update Category Split Chart
+    if (this.customer?.categorySplit && this.customer.categorySplit.length > 0) {
+      const categoryData = this.customer.categorySplit;
+      const labels = categoryData.map(item => item.category);
+      const data = categoryData.map(item => item.amount);
+      
+      // Generate colors for categories
+      const colors = this.generateColors(categoryData.length);
+
+      if (this.categorySplitChart) {
+        this.categorySplitChart.data.labels = labels;
+        this.categorySplitChart.data.datasets[0].data = data;
+        this.categorySplitChart.data.datasets[0].backgroundColor = colors;
+        this.categorySplitChart.update('none');
+      }
+    }
   }
 
-  // Category Split: Keep dummy or extend API later
-}
+  private generateColors(count: number): string[] {
+    const baseColors = ['#8B1538', '#10B981', '#3B82F6', '#F59E0B', '#EF4444', '#8B5CF6', '#06B6D4', '#84CC16'];
+    const colors: string[] = [];
+    for (let i = 0; i < count; i++) {
+      colors.push(baseColors[i % baseColors.length]);
+    }
+    return colors;
+  }
 
   goBack(): void {
     this.router.navigate(['/customers']);

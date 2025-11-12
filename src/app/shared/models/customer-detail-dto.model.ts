@@ -31,13 +31,20 @@ export interface CustomerDetailDto {
   customerType?: CustomerTypeDto | null;
   employee?: EmployeeDto | null;
   totalOrders?: number;
-lifetimeValue?: number;
-lastPurchase?: string;
-openInvoices?: number;
-orderHistory?: OrderSummaryDto[];
-paymentHistory?: PaymentSummaryDto[];
-engagement?: EngagementDto[];
-purchaseTrendData?: { month: number; total: number }[];
+  lifetimeValue?: number;
+  lastPurchase?: string;
+  activePolicies?: number;
+  orderHistory?: OrderSummaryDto[];
+  paymentHistory?: PaymentSummaryDto[];
+  engagement?: EngagementDto[];
+  purchaseTrend?: Array<{
+    month: string;
+    amount: number;
+  }>;
+  categorySplit?: Array<{
+    category: string;
+    amount: number;
+  }>;
 }
 export interface OrderSummaryDto {
   orderId: number;

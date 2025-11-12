@@ -1,0 +1,13 @@
+Page: Product Details
+Header/Title: Product Details
+
+Static data found (not from API):
+- Orders list: hardcoded sample array with orderId/date/customer/quantity/total
+- Stock movements: hardcoded sample array (restocked/sold)
+- Alerts: hardcoded messages about demand/campaign
+- Sales trend chart: dummy labels/data ["Apr".."Sep"], data [1800..]
+- Pagination options for orders: pageSizes = [5, 10, 20, 50]
+
+Notes:
+- The main product details come from ProductService.getById (API). The related orders, stock movements, alerts, and chart demo data are static placeholders.
+

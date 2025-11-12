@@ -1,0 +1,11 @@
+Page: Products
+Header/Title: Products
+
+Static data found (not from API):
+- Pagination options: pageSizes = [5, 10, 25, 50, 100]
+- Timestamp display format for lastUpdate uses a fixed locale/format
+- Export payload defaults for CSV: search fallback 'string', extreme pageNumber=2147483647
+
+Notes:
+- Product list and drug types are fetched via ProductService and HelperService (API). Static items are only pagination options, formatting, and export defaults.
+

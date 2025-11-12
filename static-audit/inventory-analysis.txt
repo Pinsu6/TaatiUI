@@ -1,0 +1,14 @@
+Page: Inventory Analysis
+Header/Title: Inventory Analysis
+
+Static data found (not from API):
+- Chart color palettes:
+  - Category chart colors: ["#8B1538","#10B981","#3B82F6","#F59E0B","#6B7280","#8B5CF6","#EC4899","#14B8A6"]
+  - Turnover chart: borderColor "#D4AF37", background "rgba(212,175,55,0.2)"
+- Formatting helpers:
+  - formatCurrency uses "SLL", "K", "M" suffixes
+  - formatTurnover returns strings like "0x", "1.2x"
+
+Notes:
+- KPIs, stockByCategory, turnoverRatio, stockAlerts are from AnalyticsService (API). Static items are only color arrays and formatting strings.
+
