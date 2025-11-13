@@ -20,10 +20,8 @@ import { takeUntil } from 'rxjs/operators';
 })
 export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
   @ViewChild('salesChart') salesChartRef!: ElementRef<HTMLCanvasElement>;
-  @ViewChild('categoriesChart') categoriesChartRef!: ElementRef<HTMLCanvasElement>;
   @ViewChild('map') mapRef!: ElementRef<HTMLDivElement>;
   private salesChart!: Chart;
-  private categoriesChart!: Chart;
   private map!: L.Map;
   private destroy$ = new Subject<void>();
 
@@ -70,9 +68,6 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
     }
     if (this.salesChart) {
       this.salesChart.destroy();
-    }
-    if (this.categoriesChart) {
-      this.categoriesChart.destroy();
     }
   }
 
@@ -185,7 +180,7 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
 
   private initializeChartsWhenReady(attempts = 0) {
     const maxAttempts = 10;
-    if (this.salesChartRef && this.categoriesChartRef && this.mapRef && this.dashboardData) {
+    if (this.salesChartRef && this.mapRef && this.dashboardData) {
       this.initializeCharts();
       this.initializeMap();
     } else if (attempts < maxAttempts) {
@@ -198,16 +193,13 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   private initializeCharts() {
-    if (!this.salesChartRef || !this.categoriesChartRef || !this.dashboardData) {
+    if (!this.salesChartRef || !this.dashboardData) {
       return;
     }
 
     // Destroy existing charts if they exist
     if (this.salesChart) {
       this.salesChart.destroy();
-    }
-    if (this.categoriesChart) {
-      this.categoriesChart.destroy();
     }
 
     // Revenue Performance Chart
@@ -270,43 +262,6 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
                   return value.toLocaleString(); 
                 }
               }
-            }
-          }
-        }
-      });
-    }
-
-    // Product Categories Chart
-    const categoriesCtx = this.categoriesChartRef.nativeElement.getContext('2d');
-    if (categoriesCtx) {
-      // Handle empty productCategories array
-      const categories = this.dashboardData.productCategories || [];
-      const labels = categories.length > 0 
-        ? categories.map(item => item.category || 'Uncategorized')
-        : ['No Data'];
-      const shareData = categories.length > 0 
-        ? categories.map(item => item.share)
-        : [100];
-
-      const colors = ['#8B1538', '#D4AF37', '#10B981', '#7C3AED', '#F97316', '#8B5CF6', '#EC4899', '#14B8A6'];
-      const backgroundColor = labels.map((_, index) => colors[index % colors.length]);
-
-      this.categoriesChart = new Chart(categoriesCtx, {
-        type: 'doughnut',
-        data: {
-          labels: labels,
-          datasets: [{
-            data: shareData,
-            hoverOffset: 6,
-            backgroundColor: backgroundColor
-          }]
-        },
-        options: {
-          responsive: true,
-          plugins: { 
-            legend: { position: 'bottom' },
-            tooltip: {
-              enabled: categories.length > 0
             }
           }
         }

@@ -78,8 +78,8 @@
     </div>
 
     <!-- Charts -->
-    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-      <div class="bg-white rounded-xl p-6 shadow border-t-4 border-tati-burgundy">
+    <div class="space-y-6">
+      <div class="bg-white rounded-xl p-6 shadow border-t-4 border-tati-burgundy w-full">
         <h3 class="text-lg font-semibold text-tati-burgundy mb-4">Monthly Sales Trend</h3>
         <div class="chart-container relative">
           <canvas #trendChart></canvas>
@@ -92,7 +92,7 @@
           </div>
         </div>
       </div>
-      <div class="bg-white rounded-xl p-6 shadow border-t-4 border-tati-gold">
+      <div class="bg-white rounded-xl p-6 shadow border-t-4 border-tati-gold w-full">
         <h3 class="text-lg font-semibold text-tati-burgundy mb-4">Top Products by Sales</h3>
         <div class="chart-container relative">
           <canvas #productsChart></canvas>
@@ -109,10 +109,16 @@
 
     <!-- Sales by Region Table -->
     <div class="bg-white rounded-xl shadow border-t-4 border-green-500">
-      <div class="p-6 border-b">
+      <div class="p-6 border-b flex justify-between items-center">
         <h3 class="text-lg font-semibold text-tati-burgundy">Sales by Region</h3>
+        <button 
+          (click)="toggleRegionTable()" 
+          class="p-2 rounded-md hover:bg-gray-100 transition-colors"
+          [attr.aria-expanded]="isRegionTableExpanded">
+          <i class="fas text-tati-burgundy text-lg" [ngClass]="isRegionTableExpanded ? 'fa-minus' : 'fa-plus'"></i>
+        </button>
       </div>
-      <div class="overflow-x-auto">
+      <div class="overflow-x-auto" *ngIf="isRegionTableExpanded">
         <table class="w-full text-left" *ngIf="regions.length > 0; else noRegions">
           <thead class="bg-gray-100 text-xs uppercase text-gray-600">
             <tr>
@@ -123,7 +129,7 @@
             </tr>
           </thead>
           <tbody class="divide-y">
-            <tr *ngFor="let region of regions" class="hover:bg-gray-50">
+            <tr *ngFor="let region of paginatedRegions" class="hover:bg-gray-50">
               <td class="px-6 py-3 font-medium">{{ region.name }}</td>
               <td class="px-6 py-3 font-semibold">{{ formatCurrency(region.revenue) }}</td>
               <td class="px-6 py-3">{{ region.orders }}</td>
@@ -147,6 +153,40 @@
             <p>No regional sales data available</p>
           </div>
         </ng-template>
+        
+        <!-- Pagination Controls -->
+        <div *ngIf="regions.length > itemsPerPage" class="p-6 border-t flex items-center justify-between">
+          <div class="text-sm text-gray-600">
+            Showing {{ startIndex }} to {{ endIndex }} of {{ regions.length }} regions
+          </div>
+          <div class="flex items-center gap-2">
+            <button 
+              (click)="previousPage()" 
+              [disabled]="currentPage === 1"
+              class="px-4 py-2 border rounded-md text-tati-burgundy hover:bg-tati-burgundy hover:text-white transition disabled:opacity-50 disabled:cursor-not-allowed">
+              <i class="fas fa-chevron-left mr-1"></i> Previous
+            </button>
+            <div class="flex items-center gap-1">
+              <button 
+                *ngFor="let page of pageNumbers"
+                (click)="goToPage(page)"
+                class="px-3 py-2 border rounded-md text-sm transition"
+                [class.bg-tati-burgundy]="currentPage === page"
+                [class.text-white]="currentPage === page"
+                [class.text-tati-burgundy]="currentPage !== page"
+                [class.hover:bg-tati-burgundy]="currentPage !== page"
+                [class.hover:text-white]="currentPage !== page">
+                {{ page }}
+              </button>
+            </div>
+            <button 
+              (click)="nextPage()" 
+              [disabled]="currentPage === totalPages"
+              class="px-4 py-2 border rounded-md text-tati-burgundy hover:bg-tati-burgundy hover:text-white transition disabled:opacity-50 disabled:cursor-not-allowed">
+              Next <i class="fas fa-chevron-right ml-1"></i>
+            </button>
+          </div>
+        </div>
       </div>
     </div>
   </div>

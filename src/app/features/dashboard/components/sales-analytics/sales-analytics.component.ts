@@ -39,6 +39,11 @@ export class SalesAnalyticsComponent implements OnInit, OnDestroy {
   ytdSales = 0;
   avgOrderValue = 0;
 
+  // Pagination for Sales by Region
+  currentPage = 1;
+  itemsPerPage = 10;
+  isRegionTableExpanded = true;
+
   constructor(
     private router: Router,
     private analyticsService: AnalyticsService,
@@ -134,6 +139,8 @@ export class SalesAnalyticsComponent implements OnInit, OnDestroy {
     } else {
       this.regions = [];
     }
+    // Reset pagination when regions are updated
+    this.currentPage = 1;
   }
 
   ngAfterViewInit() {
@@ -301,5 +308,50 @@ export class SalesAnalyticsComponent implements OnInit, OnDestroy {
           // Don't show error to user, just log it
         }
       });
+  }
+
+  // Pagination methods
+  get paginatedRegions(): SalesRegion[] {
+    const startIndex = (this.currentPage - 1) * this.itemsPerPage;
+    const endIndex = startIndex + this.itemsPerPage;
+    return this.regions.slice(startIndex, endIndex);
+  }
+
+  get totalPages(): number {
+    return Math.ceil(this.regions.length / this.itemsPerPage);
+  }
+
+  get pageNumbers(): number[] {
+    return Array.from({ length: this.totalPages }, (_, i) => i + 1);
+  }
+
+  get startIndex(): number {
+    return (this.currentPage - 1) * this.itemsPerPage + 1;
+  }
+
+  get endIndex(): number {
+    return Math.min(this.currentPage * this.itemsPerPage, this.regions.length);
+  }
+
+  goToPage(page: number) {
+    if (page >= 1 && page <= this.totalPages) {
+      this.currentPage = page;
+    }
+  }
+
+  previousPage() {
+    if (this.currentPage > 1) {
+      this.currentPage--;
+    }
+  }
+
+  nextPage() {
+    if (this.currentPage < this.totalPages) {
+      this.currentPage++;
+    }
+  }
+
+  toggleRegionTable() {
+    this.isRegionTableExpanded = !this.isRegionTableExpanded;
   }
 }

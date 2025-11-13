@@ -36,6 +36,11 @@ export class InventoryAnalysisComponent implements OnInit, OnDestroy {
   overstockAlerts = 0;
   avgTurnover = 0;
 
+  // Pagination for Stock Alerts
+  currentPage = 1;
+  itemsPerPage = 10;
+  isStockAlertsTableExpanded = true;
+
   constructor(
     private router: Router,
     private analyticsService: AnalyticsService
@@ -132,6 +137,8 @@ export class InventoryAnalysisComponent implements OnInit, OnDestroy {
 
   private updateStockAlerts(data: InventoryAnalyticsDto) {
     this.stockAlerts = data.stockAlerts || [];
+    // Reset pagination when stock alerts are updated
+    this.currentPage = 1;
   }
 
   ngAfterViewInit() {
@@ -259,5 +266,50 @@ export class InventoryAnalysisComponent implements OnInit, OnDestroy {
 
   goBack() {
     this.router.navigate(['/dashboard']);
+  }
+
+  // Pagination methods
+  get paginatedStockAlerts(): StockAlert[] {
+    const startIndex = (this.currentPage - 1) * this.itemsPerPage;
+    const endIndex = startIndex + this.itemsPerPage;
+    return this.stockAlerts.slice(startIndex, endIndex);
+  }
+
+  get totalPages(): number {
+    return Math.ceil(this.stockAlerts.length / this.itemsPerPage);
+  }
+
+  get pageNumbers(): number[] {
+    return Array.from({ length: this.totalPages }, (_, i) => i + 1);
+  }
+
+  get startIndex(): number {
+    return (this.currentPage - 1) * this.itemsPerPage + 1;
+  }
+
+  get endIndex(): number {
+    return Math.min(this.currentPage * this.itemsPerPage, this.stockAlerts.length);
+  }
+
+  goToPage(page: number) {
+    if (page >= 1 && page <= this.totalPages) {
+      this.currentPage = page;
+    }
+  }
+
+  previousPage() {
+    if (this.currentPage > 1) {
+      this.currentPage--;
+    }
+  }
+
+  nextPage() {
+    if (this.currentPage < this.totalPages) {
+      this.currentPage++;
+    }
+  }
+
+  toggleStockAlertsTable() {
+    this.isStockAlertsTableExpanded = !this.isStockAlertsTableExpanded;
   }
 }

@@ -61,14 +61,14 @@
     </div>
 
     <!-- Charts -->
-    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-      <div class="bg-white p-6 rounded-xl shadow-md border-t-4 border-tati-burgundy hover:shadow-lg transition-shadow">
+    <div class="space-y-6">
+      <div class="bg-white p-6 rounded-xl shadow-md border-t-4 border-tati-burgundy hover:shadow-lg transition-shadow w-full">
         <h3 class="text-lg font-semibold text-tati-burgundy mb-6">Stock by Category</h3>
         <div class="chart-container">
           <canvas #categoryChart></canvas>
         </div>
       </div>
-      <div class="bg-white p-6 rounded-xl shadow-md border-t-4 border-tati-gold hover:shadow-lg transition-shadow">
+      <div class="bg-white p-6 rounded-xl shadow-md border-t-4 border-tati-gold hover:shadow-lg transition-shadow w-full">
         <h3 class="text-lg font-semibold text-tati-burgundy mb-6">Inventory Turnover Ratio (Monthly)</h3>
         <div class="chart-container">
           <canvas #turnoverChart></canvas>
@@ -78,10 +78,16 @@
 
     <!-- Stock Alerts Table -->
     <div class="bg-white rounded-xl shadow-md border-t-4 border-red-500 hover:shadow-lg transition-shadow">
-      <div class="p-6 border-b border-gray-200">
+      <div class="p-6 border-b border-gray-200 flex justify-between items-center">
         <h3 class="text-lg font-semibold text-tati-burgundy">Stock Alerts</h3>
+        <button 
+          (click)="toggleStockAlertsTable()" 
+          class="p-2 rounded-md hover:bg-gray-100 transition-colors"
+          [attr.aria-expanded]="isStockAlertsTableExpanded">
+          <i class="fas text-tati-burgundy text-lg" [ngClass]="isStockAlertsTableExpanded ? 'fa-minus' : 'fa-plus'"></i>
+        </button>
       </div>
-      <div class="overflow-x-auto">
+      <div class="overflow-x-auto" *ngIf="isStockAlertsTableExpanded">
         <table class="w-full text-left" *ngIf="stockAlerts.length > 0; else noAlerts">
           <thead class="bg-gray-100 text-xs uppercase text-gray-600">
             <tr>
@@ -92,7 +98,7 @@
             </tr>
           </thead>
           <tbody class="divide-y divide-gray-200">
-            <tr *ngFor="let alert of stockAlerts" class="hover:bg-gray-50 transition-colors">
+            <tr *ngFor="let alert of paginatedStockAlerts" class="hover:bg-gray-50 transition-colors">
               <td class="px-6 py-4 font-medium">{{ alert.product }}</td>
               <td class="px-6 py-4">{{ alert.category || 'N/A' }}</td>
               <td class="px-6 py-4">{{ alert.currentStock.toLocaleString() }}</td>
@@ -112,6 +118,40 @@
             <p class="text-lg">No stock alerts available</p>
           </div>
         </ng-template>
+        
+        <!-- Pagination Controls -->
+        <div *ngIf="stockAlerts.length > itemsPerPage" class="p-6 border-t flex items-center justify-between">
+          <div class="text-sm text-gray-600">
+            Showing {{ startIndex }} to {{ endIndex }} of {{ stockAlerts.length }} alerts
+          </div>
+          <div class="flex items-center gap-2">
+            <button 
+              (click)="previousPage()" 
+              [disabled]="currentPage === 1"
+              class="px-4 py-2 border rounded-md text-tati-burgundy hover:bg-tati-burgundy hover:text-white transition disabled:opacity-50 disabled:cursor-not-allowed">
+              <i class="fas fa-chevron-left mr-1"></i> Previous
+            </button>
+            <div class="flex items-center gap-1">
+              <button 
+                *ngFor="let page of pageNumbers"
+                (click)="goToPage(page)"
+                class="px-3 py-2 border rounded-md text-sm transition"
+                [class.bg-tati-burgundy]="currentPage === page"
+                [class.text-white]="currentPage === page"
+                [class.text-tati-burgundy]="currentPage !== page"
+                [class.hover:bg-tati-burgundy]="currentPage !== page"
+                [class.hover:text-white]="currentPage !== page">
+                {{ page }}
+              </button>
+            </div>
+            <button 
+              (click)="nextPage()" 
+              [disabled]="currentPage === totalPages"
+              class="px-4 py-2 border rounded-md text-tati-burgundy hover:bg-tati-burgundy hover:text-white transition disabled:opacity-50 disabled:cursor-not-allowed">
+              Next <i class="fas fa-chevron-right ml-1"></i>
+            </button>
+          </div>
+        </div>
       </div>
     </div>
   </div>
