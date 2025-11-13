@@ -13,4 +13,5 @@
 /* Apply margin to all dashboard cards/boxes */
 #dashboard .bg-white.rounded-xl.shadow {
   margin: 12px;
+  border: 1px solid #e5e7eb;
 }

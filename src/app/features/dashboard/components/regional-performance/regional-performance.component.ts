@@ -14,6 +14,7 @@ export class RegionalPerformanceComponent {
   @ViewChild('regionChart') regionChartRef!: ElementRef<HTMLCanvasElement>;
   @ViewChild('map') mapRef!: ElementRef<HTMLDivElement>;
   private regionChart!: Chart;
+  private map!: L.Map;
 
   regions: Region[] = [
     { name: 'Western Area', lat: 8.4657, lon: -13.2317, revenue: 6200000, growth: 12, city: 'Freetown', orders: 1240 },
@@ -25,11 +26,26 @@ export class RegionalPerformanceComponent {
   constructor(private router: Router) {}
 
   ngAfterViewInit() {
-    // Leaflet Map
-    const map = L.map(this.mapRef.nativeElement).setView([8.4844, -13.2344], 7);
+    this.initializeVisualizations();
+  }
+
+  goBack() {
+    this.router.navigate(['/dashboard']);
+  }
+
+  loadRegionalPerformance() {
+    this.initializeVisualizations();
+  }
+
+  private initializeVisualizations() {
+    if (this.map) {
+      this.map.remove();
+    }
+
+    this.map = L.map(this.mapRef.nativeElement).setView([8.4844, -13.2344], 7);
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
       attribution: '© OpenStreetMap contributors'
-    }).addTo(map);
+    }).addTo(this.map);
 
     this.regions.forEach(r => {
       const marker = L.circleMarker([r.lat, r.lon], {
@@ -38,13 +54,20 @@ export class RegionalPerformanceComponent {
         color: '#fff',
         weight: 2,
         fillOpacity: 0.9
-      }).addTo(map);
+      }).addTo(this.map);
       marker.bindPopup(`<strong>${r.name}</strong><br/>Revenue: SLL ${r.revenue.toLocaleString()}`);
     });
 
-    // Region Revenue Chart
+    if (this.regionChart) {
+      this.regionChart.destroy();
+    }
+
     const regionCtx = this.regionChartRef.nativeElement.getContext('2d');
-    this.regionChart = new Chart(regionCtx!, {
+    if (!regionCtx) {
+      return;
+    }
+
+    this.regionChart = new Chart(regionCtx, {
       type: 'bar',
       data: {
         labels: this.regions.map(r => r.name),
@@ -66,9 +89,5 @@ export class RegionalPerformanceComponent {
         }
       }
     });
-  }
-
-  goBack() {
-    this.router.navigate(['/dashboard']);
   }
 }

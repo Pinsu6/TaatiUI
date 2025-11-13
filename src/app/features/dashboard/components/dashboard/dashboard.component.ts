@@ -299,7 +299,7 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
           weight: 1,
           fillOpacity: 0.9
         }).addTo(this.map);
-        marker.bindPopup(`<strong>${region.region}</strong><br/>Revenue: SLL ${region.revenue.toLocaleString()}`);
+        marker.bindPopup(`<strong>${region.region}</strong>`);
       });
     } else if (this.pharmacies.length > 0) {
       // Fallback to pharmacies if regional data is not available
@@ -314,7 +314,7 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
           weight: 1,
           fillOpacity: 0.9
         }).addTo(this.map);
-        marker.bindPopup(`<strong>${p.name}</strong><br/>Region: ${p.region}<br/>Revenue: SLL ${p.revenue.toLocaleString()}`);
+        marker.bindPopup(`<strong>${p.region}</strong>`);
       });
     }
   }
