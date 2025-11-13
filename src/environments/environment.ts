@@ -4,7 +4,7 @@
 
 export const environment = {
   production: false,
- // apiBaseUrl: 'https://api.tatipharma.com/api'
-  apiBaseUrl: 'http://localhost:5272/api'
+  apiBaseUrl: 'https://api.tatipharma.com/api'
+  //apiBaseUrl: 'http://localhost:5272/api'
 };
 

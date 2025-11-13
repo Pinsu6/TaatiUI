@@ -48,8 +48,8 @@
       </div>
       <div class="bg-white p-6 rounded-xl shadow border-t-4 border-yellow-500">
         <div class="flex justify-between items-center mb-2">
-          <i class="fas fa-receipt text-yellow-500 text-xl"></i>
-          <span class="text-yellow-500 text-sm font-semibold">Orders</span>
+          <i class="fas fa-shopping-cart text-yellow-500 text-xl"></i>
+          <span class="text-yellow-500 text-sm font-semibold">Average</span>
         </div>
         <div class="text-2xl font-bold text-tati-burgundy">{{ formatCurrency(avgOrderValue) }}</div>
         <div class="text-sm text-gray-500">Avg. Order Value</div>
@@ -81,14 +81,28 @@
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
       <div class="bg-white rounded-xl p-6 shadow border-t-4 border-tati-burgundy">
         <h3 class="text-lg font-semibold text-tati-burgundy mb-4">Monthly Sales Trend</h3>
-        <div class="chart-container">
+        <div class="chart-container relative">
           <canvas #trendChart></canvas>
+          <div *ngIf="!analyticsData?.salesTrend || analyticsData.salesTrend.length === 0" 
+               class="absolute inset-0 flex items-center justify-center bg-white bg-opacity-90 z-10">
+            <div class="text-center text-gray-500">
+              <i class="fas fa-chart-line text-4xl mb-2"></i>
+              <p>No sales trend data available</p>
+            </div>
+          </div>
         </div>
       </div>
       <div class="bg-white rounded-xl p-6 shadow border-t-4 border-tati-gold">
         <h3 class="text-lg font-semibold text-tati-burgundy mb-4">Top Products by Sales</h3>
-        <div class="chart-container">
+        <div class="chart-container relative">
           <canvas #productsChart></canvas>
+          <div *ngIf="!analyticsData?.topProducts || analyticsData.topProducts.length === 0" 
+               class="absolute inset-0 flex items-center justify-center bg-white bg-opacity-90 z-10">
+            <div class="text-center text-gray-500">
+              <i class="fas fa-box text-4xl mb-2"></i>
+              <p>No product data available</p>
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -109,11 +123,21 @@
             </tr>
           </thead>
           <tbody class="divide-y">
-            <tr *ngFor="let region of regions">
-              <td class="px-6 py-3">{{ region.name }}</td>
-              <td class="px-6 py-3 font-semibold">{{ region.revenue.toLocaleString() }}</td>
+            <tr *ngFor="let region of regions" class="hover:bg-gray-50">
+              <td class="px-6 py-3 font-medium">{{ region.name }}</td>
+              <td class="px-6 py-3 font-semibold">{{ formatCurrency(region.revenue) }}</td>
               <td class="px-6 py-3">{{ region.orders }}</td>
-              <td class="px-6 py-3" [ngClass]="region.growth >= 0 ? 'text-green-600' : 'text-red-600'">{{ region.growth >= 0 ? '+' : '' }}{{ region.growth }}%</td>
+              <td class="px-6 py-3 font-semibold" [ngClass]="region.growth >= 0 ? 'text-green-600' : 'text-red-600'">
+                <span *ngIf="region.growth > 0" class="flex items-center gap-1">
+                  <i class="fas fa-arrow-up text-xs"></i>
+                  {{ formatGrowth(region.growth) }}
+                </span>
+                <span *ngIf="region.growth < 0" class="flex items-center gap-1">
+                  <i class="fas fa-arrow-down text-xs"></i>
+                  {{ formatGrowth(region.growth) }}
+                </span>
+                <span *ngIf="region.growth === 0">{{ formatGrowth(region.growth) }}</span>
+              </td>
             </tr>
           </tbody>
         </table>

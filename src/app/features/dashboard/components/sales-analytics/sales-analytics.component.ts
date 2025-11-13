@@ -126,10 +126,10 @@ export class SalesAnalyticsComponent implements OnInit, OnDestroy {
   private updateRegions(data: AnalyticsDto) {
     if (data.salesByRegion && data.salesByRegion.length > 0) {
       this.regions = data.salesByRegion.map(region => ({
-        name: region.name || region.region || 'Unknown',
-        revenue: region.revenue || 0,
-        orders: region.orders || 0,
-        growth: region.growth || 0
+        name: region.region || region.name || 'Unknown',
+        revenue: region.revenue ?? 0,
+        orders: region.orders ?? 0,
+        growth: region.growth ?? 0
       }));
     } else {
       this.regions = [];
@@ -173,10 +173,10 @@ export class SalesAnalyticsComponent implements OnInit, OnDestroy {
 
     // Monthly Sales Trend Chart
     const trendCtx = this.trendChartRef.nativeElement.getContext('2d');
-    if (trendCtx && this.analyticsData) {
-      const labels = this.analyticsData.salesTrend.map(trend => trend.month);
-      const retailData = this.analyticsData.salesTrend.map(trend => trend.retail);
-      const wholesaleData = this.analyticsData.salesTrend.map(trend => trend.wholesale);
+    if (trendCtx && this.analyticsData && this.analyticsData.salesTrend && this.analyticsData.salesTrend.length > 0) {
+      const labels = this.analyticsData.salesTrend.map(trend => trend.month || '');
+      const retailData = this.analyticsData.salesTrend.map(trend => trend.retail ?? 0);
+      const wholesaleData = this.analyticsData.salesTrend.map(trend => trend.wholesale ?? 0);
 
       this.trendChart = new Chart(trendCtx, {
         type: 'line',
@@ -217,14 +217,10 @@ export class SalesAnalyticsComponent implements OnInit, OnDestroy {
 
     // Top Products Chart
     const productsCtx = this.productsChartRef.nativeElement.getContext('2d');
-    if (productsCtx && this.analyticsData) {
-      const topProducts = this.analyticsData.topProducts || [];
-      const productLabels = topProducts.length > 0
-        ? topProducts.map(p => p.productName || 'Unknown Product')
-        : ['No Data'];
-      const productData = topProducts.length > 0
-        ? topProducts.map(p => p.revenue || 0)
-        : [0];
+    if (productsCtx && this.analyticsData && this.analyticsData.topProducts && this.analyticsData.topProducts.length > 0) {
+      const topProducts = this.analyticsData.topProducts;
+      const productLabels = topProducts.map(p => p.productName || 'Unknown Product');
+      const productData = topProducts.map(p => p.revenue ?? 0);
 
       const colors = ['#8B1538', '#D4AF37', '#10B981', '#3B82F6', '#F97316', '#8B5CF6', '#EC4899', '#14B8A6'];
       const backgroundColor = productLabels.map((_, index) => colors[index % colors.length]);
@@ -256,12 +252,23 @@ export class SalesAnalyticsComponent implements OnInit, OnDestroy {
   }
 
   formatCurrency(value: number): string {
+    if (!value && value !== 0) return 'SLL 0';
     if (value >= 1000000) {
       return `SLL ${(value / 1000000).toFixed(1)}M`;
     } else if (value >= 1000) {
       return `SLL ${(value / 1000).toFixed(1)}K`;
     }
     return `SLL ${value.toLocaleString()}`;
+  }
+
+  formatGrowth(value: number): string {
+    if (!value && value !== 0) return '0%';
+    if (value > 0) {
+      return `+${value.toFixed(2)}%`;
+    } else if (value < 0) {
+      return `${value.toFixed(2)}%`;
+    }
+    return '0%';
   }
 
   goBack() {

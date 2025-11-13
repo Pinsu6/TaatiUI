@@ -130,23 +130,23 @@
           <h3 class="text-lg font-semibold text-tati-burgundy mb-3 border-b border-gray-200 pb-2">Assigned Employee</h3>
           <div class="space-y-2 text-sm">
             <p><span class="font-medium text-gray-700">Name:</span> <span class="text-gray-500">{{
-                customer?.employee?.employeeName || 'N/A' }}</span></p>
+                customer.employee?.employeeName || 'N/A' }}</span></p>
             <p><span class="font-medium text-gray-700">Short Name:</span> <span class="text-gray-500">{{
-                customer?.employee?.empShort || 'N/A' }}</span></p>
+                customer.employee?.empShort || 'N/A' }}</span></p>
             <p><span class="font-medium text-gray-700">Position:</span> <span class="text-gray-500">{{
-                customer?.employee?.empPosition || 'N/A' }}</span></p>
+                customer.employee?.empPosition || 'N/A' }}</span></p>
             <p><span class="font-medium text-gray-700">Email:</span> <span class="text-gray-500">{{
-                customer?.employee?.empEmail || 'N/A' }}</span></p>
+                customer.employee?.empEmail || 'N/A' }}</span></p>
             <p><span class="font-medium text-gray-700">Mobile:</span> <span class="text-gray-500">{{
-                customer?.employee?.empMobile || 'N/A' }}</span></p>
+                customer.employee?.empMobile || 'N/A' }}</span></p>
             <p><span class="font-medium text-gray-700">Address:</span> <span class="text-gray-500">{{
-                customer?.employee?.empAddress || 'N/A' }}</span></p>
+                customer.employee?.empAddress || 'N/A' }}</span></p>
             <p><span class="font-medium text-gray-700">Employee Type:</span> <span class="text-gray-500">{{
-                customer?.employee?.empType || 'N/A' }}</span></p>
+                customer.employee?.empType || 'N/A' }}</span></p>
             <p><span class="font-medium text-gray-700">Start Date:</span> <span class="text-gray-500">{{
-                formatDate(customer?.employee?.empStartDate) }}</span></p>
+                formatDate(customer.employee?.empStartDate) }}</span></p>
             <p><span class="font-medium text-gray-700">Active:</span>
-              <span class="text-gray-500">{{ customer?.employee?.bitIsActive ? 'Yes' : 'No' }}</span>
+              <span class="text-gray-500">{{ customer.employee?.bitIsActive ? 'Yes' : 'No' }}</span>
             </p>
           </div>
         </div>
@@ -158,19 +158,19 @@
   <div *ngIf="customer" class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-6">
     <div class="bg-white p-6 rounded-xl shadow border-t-4 border-tati-burgundy">
       <h3 class="text-gray-500">Total Orders</h3>
-      <p class="text-2xl font-bold text-tati-burgundy">{{ customer?.totalOrders || 0 }}</p>
+      <p class="text-2xl font-bold text-tati-burgundy">{{ customer.totalOrders || 0 }}</p>
     </div>
     <div class="bg-white p-6 rounded-xl shadow border-t-4 border-green-500">
       <h3 class="text-gray-500">Lifetime Value</h3>
-      <p class="text-2xl font-bold text-green-600">{{ formatCurrency(customer?.lifetimeValue || 0) }}</p>
+      <p class="text-2xl font-bold text-green-600">{{ formatCurrency(customer.lifetimeValue || 0) }}</p>
     </div>
     <div class="bg-white p-6 rounded-xl shadow border-t-4 border-blue-500">
       <h3 class="text-gray-500">Last Purchase</h3>
-      <p class="text-2xl font-bold text-blue-600">{{ formatDate(customer?.lastPurchase) }}</p>
+      <p class="text-2xl font-bold text-blue-600">{{ formatDate(customer.lastPurchase) }}</p>
     </div>
     <div class="bg-white p-6 rounded-xl shadow border-t-4 border-yellow-500">
       <h3 class="text-gray-500">Active Policies</h3>
-      <p class="text-2xl font-bold text-yellow-600">{{ customer?.activePolicies || 0 }}</p>
+      <p class="text-2xl font-bold text-yellow-600">{{ customer.activePolicies || 0 }}</p>
     </div>
   </div>
 
