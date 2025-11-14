@@ -207,7 +207,6 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
     if (salesCtx && this.dashboardData.revenuePerformance) {
       const revenueData = this.dashboardData.revenuePerformance;
       const labels = revenueData.map(item => item.month);
-      const retailData = revenueData.map(item => item.retail);
       const wholesaleData = revenueData.map(item => item.wholesale);
 
       this.salesChart = new Chart(salesCtx, {
@@ -215,21 +214,6 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
         data: {
           labels: labels,
           datasets: [
-            {
-              label: 'Retail Sales',
-              data: retailData,
-              borderWidth: 2,
-              tension: 0.3,
-              fill: true,
-              backgroundColor: (ctx: any) => {
-                const gradient = ctx.chart.ctx.createLinearGradient(0, 0, 0, 400);
-                gradient.addColorStop(0, 'rgba(139,21,56,0.25)');
-                gradient.addColorStop(1, 'rgba(139,21,56,0)');
-                return gradient;
-              },
-              borderColor: '#8B1538',
-              pointRadius: 3
-            },
             {
               label: 'Wholesale Sales',
               data: wholesaleData,
@@ -242,7 +226,8 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
                 g.addColorStop(1, 'rgba(245,158,11,0)');
                 return g;
               },
-              pointRadius: 2
+              pointRadius: 2,
+              fill: true
             }
           ]
         },
