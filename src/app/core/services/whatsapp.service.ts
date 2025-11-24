@@ -8,11 +8,11 @@ import { ApiResponse } from '../../shared/models/api-response.model';
   providedIn: 'root'
 })
 export class WhatsappService {
-  private readonly apiUrl = ApiConfig.ENDPOINTS.CUSTOMER.BASE;
+  private readonly apiUrl = ApiConfig.ENDPOINTS.WHATSAPP.BASE;
 
   constructor(private http: HttpClient) {}
 
   sendInactiveReminder(customerIds: number[]): Observable<ApiResponse<any>> {
-    return this.http.post<ApiResponse<any>>(`${this.apiUrl}/WhatsApp/inactive-reminder`, { customerIds });
+    return this.http.post<ApiResponse<any>>(`${this.apiUrl}/inactive-reminder`, { customerIds });
   }
 }

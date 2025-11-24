@@ -22,6 +22,11 @@ const routes: Routes = [
   { path: 'dashboard', loadChildren: () => import('./features/dashboard/dashboard.module').then(m => m.DashboardModule), canActivate: [AuthGuard] },
   { path: 'customers', loadChildren: () => import('./features/customers/customers.module').then(m => m.CustomersModule), canActivate: [AuthGuard] },
   { path: 'products', loadChildren: () => import('./features/products/products.module').then(m => m.ProductsModule), canActivate: [AuthGuard] },
+  {
+    path: 'message-log',
+    loadComponent: () => import('./features/message-log/message-log.component').then(c => c.MessageLogComponent),
+    canActivate: [AuthGuard]
+  },
   { path: '**', redirectTo: '/login' }
 ];
 

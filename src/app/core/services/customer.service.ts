@@ -197,4 +197,15 @@ private mapToInactiveCustomers(dtos: InactiveCustomerDto[]): Customer[] {
     engagement: []
   }));
 }
+
+searchMessageLogs(filter: any): Observable<any> {
+  const url = 'https://localhost:44367/api/MessageLog/search';
+  return this.http.post<ApiResponse<any>>(url, filter).pipe(
+    map(res => {
+      if (res.success) return res;
+      throw new Error(res.message || 'Failed to search logs');
+    }),
+    catchError(this.handleError)
+  );
+}
 }

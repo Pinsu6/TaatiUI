@@ -60,6 +60,10 @@ export class ApiConfig {
       PRODUCTS: `${ApiConfig.BASE_URL}/Helper/products`,
       DRUG_TYPES: `${ApiConfig.BASE_URL}/Helper/drug-types`,
       CITIES: `${ApiConfig.BASE_URL}/Helper/cities`
+    },
+
+    WHATSAPP: {
+      BASE : `${ApiConfig.BASE_URL}/WhatsApp`
     }
   };
 }
