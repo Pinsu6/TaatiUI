@@ -8,6 +8,7 @@ import { CustomerFilter } from '../../shared/models/customer-filter.model';
 import { PagedResult } from '../../shared/models/paged-result.model';
 import { CustomerDetailDto } from '../../shared/models/customer-detail-dto.model';
 import { ApiConfig } from '../config/api.config';
+import { InactiveCustomerDto } from '../../shared/models/inactive-customer-dto.model';
 
 @Injectable({
   providedIn: 'root'
@@ -123,5 +124,77 @@ export class CustomerService {
       }),
       catchError(this.handleError)
     );
+}
+
+// Add this method inside CustomerService class
+getInactivePaged(filter: { pageNumber: number; pageSize: number; day?: number }): Observable<PagedResult<Customer>> {
+  let params = new HttpParams()
+    .set('pageNumber', filter.pageNumber.toString())
+    .set('pageSize', filter.pageSize.toString());
+
+  if (filter.day !== undefined && filter.day !== null && filter.day > 0) {
+    params = params.set('day', filter.day.toString());
+  }
+
+  const url = `${this.apiUrl}/inactive`; // https://localhost:44367/api/Customer/inactive
+
+  return this.http.get<ApiResponse<PagedResult<InactiveCustomerDto>>>(url, { params })
+    .pipe(
+      map(response => {
+        if (response.success && response.data) {
+          return {
+            data: this.mapToInactiveCustomers(response.data.data),
+            totalCount: response.data.totalCount,
+            pageNumber: response.data.pageNumber,
+            pageSize: response.data.pageSize,
+            totalPages: response.data.totalPages || Math.ceil(response.data.totalCount / response.data.pageSize),
+            hasNextPage: response.data.hasNextPage,
+            hasPreviousPage: response.data.hasPreviousPage
+          };
+        } else {
+          throw new Error(response.message || 'Failed to fetch inactive customers');
+        }
+      }),
+      catchError(this.handleError)
+    );
+}
+
+// Add this method right below your existing mapToCustomers()
+private mapToInactiveCustomers(dtos: InactiveCustomerDto[]): Customer[] {
+  return dtos.map(dto => ({
+    id: dto.customerId,
+    cusCode: dto.cusCode || '',
+    name: `${dto.cusFirstname || ''} ${dto.cusLastname || ''}`.trim() || 'Unknown',
+    email: dto.cusEmail || '',
+    phone: dto.cusMobileno || '',
+    status: dto.bitIsActive === false ? 'inactive' : 'active',
+    company: '',
+    address: dto.address || '',
+    cusMobileno: dto.cusMobileno || '',
+    cusPhonenoO: dto.cusPhonenoO || '',        // fallback to empty string
+    cusPhonenoR: dto.cusPhonenoR || '',        // fallback to empty string
+    city: dto.city || '',
+    district: dto.district || '',
+    country: dto.country || '',
+    pin: dto.pin || '',
+    region: dto.region || '',
+    pbsllicense: dto.pbsllicense || '',
+    licenseType: dto.licenseType || '',
+    licenseExpiry: dto.licenseExpiry ?? null,
+    creditlim: dto.creditlim ?? 0,
+    creditdays: dto.creditdays ?? 0,
+    dateCreated: dto.dateCreated || '',
+    bitIsActive: dto.bitIsActive ?? false,
+    storeAmtremain: dto.storeAmtremain ?? 0,
+    storeAmtused: dto.storeAmtused ?? 0,
+    customerType: null,
+    employee: null,
+    totalOrders: 0,
+    lifetimeValue: 0,
+    lastPurchase: dto.dateCreated || '',
+    activePolicies: 0,
+    orderHistory: [],
+    engagement: []
+  }));
 }
 }

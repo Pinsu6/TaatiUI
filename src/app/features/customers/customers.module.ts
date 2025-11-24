@@ -5,12 +5,14 @@ import { CustomersRoutingModule } from './customers-routing.module';
 import { CustomersComponent } from './customers.component';
 import { FormsModule } from '@angular/forms';
 import { CustomerDetailsComponent } from './customer-details/customer-details.component';
+import { InactiveCustomersComponent } from './inactive-customers/inactive-customers.component';
 
 
 @NgModule({
   declarations: [
     CustomersComponent,
-    CustomerDetailsComponent
+    CustomerDetailsComponent,
+    InactiveCustomersComponent
   ],
   imports: [
     CommonModule,

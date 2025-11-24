@@ -1,0 +1,151 @@
+<div class="mx-auto">
+  <!-- Header -->
+  <header class="bg-white rounded-xl p-6 shadow mb-6 border-t-4 border-red-600">
+    <div class="flex justify-between items-center gap-4 flex-wrap">
+      <div>
+        <h2 class="text-2xl font-bold text-gray-900">Inactive Customers</h2>
+        <p class="text-gray-600 text-sm mt-1">
+          Customers who are currently inactive and do not receive updates
+        </p>
+      </div>
+      <div class="flex gap-3">
+        <button (click)="refresh()"
+                class="px-4 py-2 border border-tati-burgundy text-tati-burgundy rounded-md hover:bg-tati-burgundy hover:text-white transition flex items-center gap-2">
+          <i class="fas fa-sync-alt"></i> Refresh
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Alert Banner -->
+  <!-- <div class="bg-red-50 border border-red-200 text-red-800 p-4 rounded-xl flex items-start gap-3 mb-6">
+    <i class="fas fa-exclamation-triangle text-xl mt-0.5"></i>
+    <div class="text-sm">
+      <strong>Inactive Customers</strong> — These pharmacies are marked as inactive.
+      They will not receive notifications, promotions, or order updates until reactivated.
+    </div>
+  </div> -->
+
+  <div class="bg-white rounded-xl border p-4 shadow mb-6 flex items-center gap-4">
+  <label class="text-sm font-medium text-gray-700">Inactive for more than:</label>
+  <input type="number" [(ngModel)]="inactiveDays" (change)="pageNumber=1; loadInactiveCustomers()"
+         class="w-24 px-3 py-2 border rounded-lg" min="1" max="3650">
+  <span class="text-sm text-gray-600">days</span>
+  <button (click)="inactiveDays=60; pageNumber=1; loadInactiveCustomers()"
+          class="text-sm text-tati-burgundy hover:underline">Reset</button>
+</div>
+
+<!-- Loading -->
+<div *ngIf="isLoading" class="text-center py-12">
+  <i class="fas fa-spinner fa-spin text-3xl text-tati-burgundy"></i>
+  <p class="mt-4 text-gray-600">Loading inactive customers...</p>
+</div>
+
+<!-- Error -->
+<div *ngIf="errorMessage && !isLoading" class="bg-red-50 border border-red-300 rounded-xl p-6 text-center">
+  <p class="text-red-700 font-medium">{{ errorMessage }}</p>
+  <button (click)="loadInactiveCustomers()" class="mt-4 px-6 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700">
+    Retry
+  </button>
+</div>
+
+  <!-- Table with Checkboxes -->
+  <div class="bg-white shadow-lg rounded-xl border overflow-hidden mb-6">
+    <table class="min-w-full divide-y divide-gray-200">
+      <thead class="bg-gray-900 text-white">
+        <tr>
+          <th class="px-6 py-4 text-left text-sm font-semibold">
+            <input type="checkbox"
+                   (change)="toggleSelectAll($event)"
+                   [checked]="isAllSelected()"
+                   class="w-4 h-4 rounded border-gray-300 focus:ring-tati-burgundy">
+          </th>
+          <th class="px-6 py-4 text-left text-sm font-semibold uppercase tracking-wider">Cus Code</th>
+          <th class="px-6 py-4 text-left text-sm font-semibold uppercase tracking-wider">Pharmacy Name</th>
+          <th class="px-6 py-4 text-left text-sm font-semibold uppercase tracking-wider">Email</th>
+          <th class="px-6 py-4 text-left text-sm font-semibold uppercase tracking-wider">Phone</th>
+        </tr>
+      </thead>
+      <tbody class="bg-white divide-y divide-gray-200">
+        <tr *ngFor="let customer of inactiveCustomers" class="hover:bg-gray-50 transition">
+          <td class="px-6 py-4">
+            <input type="checkbox"
+                   [checked]="selectedCustomers.includes(customer.id)"
+                   (change)="toggleSelection(customer.id)"
+                   class="w-4 h-4 rounded border-gray-300 focus:ring-tati-burgundy">
+          </td>
+          <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+            {{ customer.cusCode }}
+          </td>
+          <td class="px-6 py-4 text-sm font-medium text-gray-900">
+            {{ customer.name }}
+          </td>
+          <td class="px-6 py-4 text-sm text-gray-600">
+            {{ customer.email }}
+          </td>
+          <td class="px-6 py-4 text-sm text-gray-600">
+            {{ customer.phone }}
+          </td>
+        </tr>
+      </tbody>
+    </table>
+
+    <!-- Empty State -->
+    <div *ngIf="inactiveCustomers.length === 0" class="text-center py-12 text-gray-500">
+      <i class="fas fa-users-slash text-4xl mb-4 text-gray-300"></i>
+      <p>No inactive customers found.</p>
+    </div>
+  </div>
+
+  <!-- Pagination -->
+<div *ngIf="!isLoading && totalCount > 0" class="flex justify-between items-center bg-white rounded-xl p-4 border shadow mt-6">
+  <div class="flex items-center gap-4 text-sm text-gray-600">
+    <select [(ngModel)]="pageSize" (ngModelChange)="onPageSizeChange()"
+            class="px-4 py-2 border rounded-lg focus:ring-2 focus:ring-tati-burgundy outline-none">
+      <option *ngFor="let size of pageSizes" [value]="size">{{ size }} per page</option>
+    </select>
+
+    <span>
+      Showing {{ (pageNumber-1)*pageSize + 1 }} -
+      {{ pageNumber*pageSize > totalCount ? totalCount : pageNumber*pageSize }}
+      of {{ totalCount }} inactive customers
+    </span>
+  </div>
+
+  <div class="flex items-center gap-2">
+    <button (click)="previousPage()" [disabled]="!hasPreviousPage"
+            class="px-4 py-2 border rounded-lg disabled:opacity-50 hover:bg-gray-100">
+      Previous
+    </button>
+
+    <button *ngFor="let p of getVisiblePages()" (click)="goToPage(p)"
+            [class.bg-tati-burgundy]="p === pageNumber"
+            [class.text-white]="p === pageNumber"
+            class="px-4 py-2 border rounded-lg hover:bg-gray-100">
+      {{ p }}
+    </button>
+
+    <span *ngIf="totalPages > 5 && getVisiblePages()[getVisiblePages().length-1] < totalPages"
+          class="px-4 py-2">... {{ totalPages }}</span>
+
+    <button (click)="nextPage()" [disabled]="!hasNextPage"
+            class="px-4 py-2 border rounded-lg disabled:opacity-50 hover:bg-gray-100">
+      Next
+    </button>
+  </div>
+</div>
+
+  <!-- Send Message Button (Only when selected) -->
+  <div *ngIf="selectedCustomers.length > 0" class="mb-10">
+    <button (click)="sendMessage()"
+            class="px-6 py-3 bg-tati-burgundy text-white rounded-lg hover:bg-[#6B0E2B] transition font-medium flex items-center gap-2 shadow-lg">
+      <i class="fas fa-paper-plane"></i>
+      Send Message to {{ selectedCustomers.length }} Inactive Customer(s)
+    </button>
+  </div>
+
+  <!-- Footer -->
+  <footer class="text-center text-gray-500 text-xs py-10 mt-12">
+    © 2025 Tati Pharma. All rights reserved.
+  </footer>
+</div>
