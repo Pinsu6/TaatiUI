@@ -6,13 +6,17 @@ import { CustomersComponent } from './customers.component';
 import { FormsModule } from '@angular/forms';
 import { CustomerDetailsComponent } from './customer-details/customer-details.component';
 import { InactiveCustomersComponent } from './inactive-customers/inactive-customers.component';
+import { WhatsappOrderSummaryComponent } from './whatsapp-order-summary/whatsapp-order-summary.component';
+import { PaymentReminderComponent } from './payment-reminder/payment-reminder.component';
 
 
 @NgModule({
   declarations: [
     CustomersComponent,
     CustomerDetailsComponent,
-    InactiveCustomersComponent
+    InactiveCustomersComponent,
+    WhatsappOrderSummaryComponent,
+    PaymentReminderComponent
   ],
   imports: [
     CommonModule,

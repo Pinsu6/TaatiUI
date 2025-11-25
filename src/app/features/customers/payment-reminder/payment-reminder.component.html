@@ -1,0 +1,163 @@
+<div class="mx-auto">
+  <!-- Header -->
+  <header class="bg-white rounded-xl p-6 shadow mb-6 border-t-4 border-amber-500">
+    <div class="flex justify-between items-center gap-4 flex-wrap">
+      <div>
+        <h2 class="text-2xl font-bold text-gray-900">WhatsApp Payment Reminder</h2>
+        <p class="text-gray-600 text-sm mt-1">
+          Select a pharmacy and send a quick payment reminder over WhatsApp.
+        </p>
+      </div>
+      <div class="flex gap-3">
+        <button (click)="refresh()"
+                class="px-4 py-2 border border-amber-700 text-amber-700 rounded-md hover:bg-amber-700 hover:text-white transition flex items-center gap-2">
+          <i class="fas fa-sync-alt"></i> Refresh
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Configuration Banner (same pattern as order summary) -->
+  <div class="bg-white rounded-xl border p-4 shadow mb-6 flex flex-wrap gap-4 items-end">
+    <div class="flex flex-col">
+      <label class="text-sm font-medium text-gray-700 mb-1">Outstanding Amount (₹)</label>
+      <input type="number"
+             [(ngModel)]="outstandingAmount"
+             min="0"
+             step="0.01"
+             class="w-40 px-3 py-2 border rounded-lg focus:ring-2 focus:ring-amber-500 outline-none">
+    </div>
+    <div class="flex flex-col flex-1 min-w-[220px]">
+      <label class="text-sm font-medium text-gray-700 mb-1">Send To (WhatsApp number)</label>
+      <input type="text"
+             [(ngModel)]="to"
+             placeholder="Leave blank to use pharmacy WhatsApp from database"
+             class="px-3 py-2 border rounded-lg focus:ring-2 focus:ring-amber-500 outline-none">
+    </div>
+    <p class="text-xs text-gray-500 mt-2">
+      If <strong>Send To</strong> is empty, each selected customer's stored phone/WhatsApp number will be used.
+    </p>
+  </div>
+
+  <!-- Loading -->
+  <div *ngIf="isLoading" class="text-center py-12">
+    <i class="fas fa-spinner fa-spin text-3xl text-amber-600"></i>
+    <p class="mt-4 text-gray-600">Loading customers...</p>
+  </div>
+
+  <!-- Error -->
+  <div *ngIf="errorMessage && !isLoading" class="bg-red-50 border border-red-300 rounded-xl p-6 text-center">
+    <p class="text-red-700 font-medium">{{ errorMessage }}</p>
+    <button (click)="loadCustomers()"
+            class="mt-4 px-6 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700">
+      Retry
+    </button>
+  </div>
+
+  <!-- Table -->
+  <div class="bg-white shadow-lg rounded-xl border overflow-hidden mb-6" *ngIf="!isLoading">
+    <table class="min-w-full divide-y divide-gray-200">
+      <thead class="bg-gray-900 text-white">
+      <tr>
+        <th class="px-6 py-4 text-left text-sm font-semibold">
+          <input type="checkbox"
+                 (change)="toggleSelectAll($event)"
+                 [checked]="isAllSelected()"
+                 class="w-4 h-4 rounded border-gray-300 focus:ring-amber-600">
+        </th>
+        <th class="px-6 py-4 text-left text-sm font-semibold uppercase tracking-wider">Cus Code</th>
+        <th class="px-6 py-4 text-left text-sm font-semibold uppercase tracking-wider">Pharmacy Name</th>
+        <th class="px-6 py-4 text-left text-sm font-semibold uppercase tracking-wider">Email</th>
+        <th class="px-6 py-4 text-left text-sm font-semibold uppercase tracking-wider">Phone</th>
+      </tr>
+      </thead>
+      <tbody class="bg-white divide-y divide-gray-200">
+      <tr *ngFor="let customer of customers" class="hover:bg-gray-50 transition">
+        <td class="px-6 py-4">
+          <input type="checkbox"
+                 [checked]="selectedCustomers.includes(customer.id)"
+                 (change)="toggleSelection(customer.id)"
+                 class="w-4 h-4 rounded border-gray-300 focus:ring-amber-600">
+        </td>
+        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+          {{ customer.cusCode || '—' }}
+        </td>
+        <td class="px-6 py-4 text-sm font-medium text-gray-900">
+          {{ customer.name }}
+        </td>
+        <td class="px-6 py-4 text-sm text-gray-600">
+          {{ customer.email || '—' }}
+        </td>
+        <td class="px-6 py-4 text-sm text-gray-600">
+          {{ customer.phone || customer.cusMobileno || '—' }}
+        </td>
+      </tr>
+      </tbody>
+    </table>
+
+    <!-- Empty State -->
+    <div *ngIf="customers.length === 0" class="text-center py-12 text-gray-500">
+      <i class="fas fa-users-slash text-4xl mb-4 text-gray-300"></i>
+      <p>No customers found.</p>
+    </div>
+  </div>
+
+  <!-- Action Button -->
+  <div *ngIf="selectedCustomers.length > 0" class="mb-10 mt-6">
+    <button (click)="sendPaymentReminder()"
+            [disabled]="isSending"
+            class="px-6 py-3 bg-amber-600 text-white rounded-lg hover:bg-amber-700 transition font-medium flex items-center gap-2 shadow-lg disabled:opacity-60 disabled:cursor-not-allowed">
+      <i class="fab fa-whatsapp"></i>
+      {{ isSending ? 'Sending...' : 'Send Payment Reminder to ' + selectedCustomers.length + ' Customer(s)' }}
+    </button>
+  </div>
+
+  <!-- Pagination -->
+  <div *ngIf="!isLoading && totalCount > 0" class="flex justify-between items-center bg-white rounded-xl p-4 border shadow mt-6 flex-wrap gap-4">
+    <div class="flex items-center gap-4 text-sm text-gray-600">
+      <select [(ngModel)]="pageSize"
+              (ngModelChange)="onPageSizeChange()"
+              class="px-4 py-2 border rounded-lg focus:ring-2 focus:ring-amber-500 outline-none">
+        <option *ngFor="let size of pageSizes" [value]="size">{{ size }} per page</option>
+      </select>
+
+      <span>
+        Showing {{ (pageNumber - 1) * pageSize + 1 }} -
+        {{ pageNumber * pageSize > totalCount ? totalCount : pageNumber * pageSize }}
+        of {{ totalCount }} customers
+      </span>
+    </div>
+
+    <div class="flex items-center gap-2">
+      <button (click)="previousPage()"
+              [disabled]="!hasPreviousPage"
+              class="px-4 py-2 border rounded-lg disabled:opacity-50 hover:bg-gray-100">
+        Previous
+      </button>
+
+      <button *ngFor="let p of getVisiblePages()"
+              (click)="goToPage(p)"
+              [class.bg-amber-600]="p === pageNumber"
+              [class.text-white]="p === pageNumber"
+              class="px-4 py-2 border rounded-lg hover:bg-gray-100">
+        {{ p }}
+      </button>
+
+      <span *ngIf="totalPages > 5 && getVisiblePages()[getVisiblePages().length - 1] < totalPages"
+            class="px-4 py-2">... {{ totalPages }}</span>
+
+      <button (click)="nextPage()"
+              [disabled]="!hasNextPage"
+              class="px-4 py-2 border rounded-lg disabled:opacity-50 hover:bg-gray-100">
+        Next
+      </button>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <footer class="text-center text-gray-500 text-xs py-10 mt-12">
+    © 2025 Tati Pharma. All rights reserved.
+  </footer>
+</div>
+
+

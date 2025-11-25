@@ -43,7 +43,13 @@ export class HeaderComponent {
       '/customers': 'Customer List',
       '/products': 'Product List',
     };
-    if (url.startsWith('/customers/')) {
+    if (url === '/customers/inactive/list') {
+      this.pageTitle = 'Inactive Customers';
+    } else if (url === '/customers/order-summary') {
+      this.pageTitle = 'WhatsApp Order Summary';
+    } else if (url === '/customers/payment-reminder') {
+      this.pageTitle = 'Payment Reminder';
+    } else if (url.startsWith('/customers/')) {
       this.pageTitle = 'Customer Details';
     } else if (url.startsWith('/products/')) {
       this.pageTitle = 'Product Details';
