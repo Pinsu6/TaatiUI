@@ -24,9 +24,9 @@ const routes: Routes = [
   { path: 'products', loadChildren: () => import('./features/products/products.module').then(m => m.ProductsModule), canActivate: [AuthGuard] },
   {
     path: 'message-log',
-    loadComponent: () => import('./features/message-log/message-log.component').then(c => c.MessageLogComponent),
+    loadChildren: () => import('./features/message-log/message-log.module').then(m => m.MessageLogModul),
     canActivate: [AuthGuard]
-  },
+  }, 
   { path: '**', redirectTo: '/login' }
 ];
 

@@ -9,13 +9,11 @@ import { DashboardModule } from './features/dashboard/dashboard.module';
 import { SharedModule } from './shared/shared.module';
 import { HTTP_INTERCEPTORS, HttpClientModule } from '@angular/common/http';
 import { AuthInterceptor } from './core/interceptors/auth.interceptor';
-import { MessageLogComponent } from './features/message-log/message-log.component';
 
 
 @NgModule({
   declarations: [
-    AppComponent,
-    MessageLogComponent,
+    AppComponent
   ],
   imports: [
     BrowserModule,

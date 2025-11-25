@@ -2,6 +2,7 @@ import { Component } from '@angular/core';
 import { MessageLog } from '../../shared/models/message-log.model';
 import { debounceTime, Subject, Subscription } from 'rxjs';
 import { CustomerService } from '../../core/services/customer.service';
+import { FormsModule } from '@angular/forms';
 
 @Component({
   selector: 'app-message-log',
