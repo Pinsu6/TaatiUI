@@ -1,27 +1,30 @@
 <div class="mx-auto">
-    <header class="bg-white rounded-xl p-6 shadow mb-6 border-t-4 border-tati-gold">
+  <header class="bg-white rounded-xl p-6 shadow mb-6 border-t-4 border-tati-gold">
     <div class="flex justify-between items-center gap-4 flex-wrap">
       <div>
         <h2 class="text-2xl font-bold text-tati-burgundy">Product List</h2>
         <p class="text-gray-600 text-sm">Manage all pharmaceutical products</p>
       </div>
       <div class="flex items-center gap-3">
-        <button (click)="refresh()" class="px-4 py-2 border border-tati-burgundy text-tati-burgundy rounded-md hover:bg-tati-burgundy hover:text-white transition">
+        <button (click)="refresh()"
+          class="px-4 py-2 border border-tati-burgundy text-tati-burgundy rounded-md hover:bg-tati-burgundy hover:text-white transition">
           <i class="fas fa-sync-alt mr-2"></i> Refresh
         </button>
 
         <!-- EXPORT BUTTON -->
-        <button (click)="openExportModal()" class="px-4 py-2 border border-tati-burgundy text-tati-burgundy rounded-md hover:bg-tati-burgundy hover:text-white transition">
+        <button (click)="openExportModal()"
+          class="px-4 py-2 border border-tati-burgundy text-tati-burgundy rounded-md hover:bg-tati-burgundy hover:text-white transition">
           <i class="fas fa-download mr-2"></i> Export
         </button>
       </div>
     </div>
   </header>
   <div class="bg-green-50 border border-green-200 p-4 rounded-xl flex items-center gap-3 mb-6">
-  <div class="w-2 h-2 bg-green-500 rounded-full pulse-dot"></div>
-  <i class="fas fa-broadcast-tower text-green-600"></i>
-  <div class="text-sm text-gray-700"><strong>Real-time monitoring active</strong> — Last updated: <span>{{ lastUpdate }}</span></div>
-</div>
+    <div class="w-2 h-2 bg-green-500 rounded-full pulse-dot"></div>
+    <i class="fas fa-broadcast-tower text-green-600"></i>
+    <div class="text-sm text-gray-700"><strong>Real-time monitoring active</strong> — Last updated: <span>{{ lastUpdate
+        }}</span></div>
+  </div>
   <!-- Search & Filter -->
   <div class="bg-white rounded-xl p-6 border shadow flex flex-col sm:flex-row justify-between items-center gap-4 mb-6">
     <div class="relative flex-1">
@@ -54,14 +57,14 @@
     <table class="min-w-full divide-y divide-gray-200">
       <thead class="bg-tati-burgundy text-white">
         <tr>
-          <th class="px-6 py-3 text-left text-sm font-semibold">Drug Name</th>
-          <th class="px-6 py-3 text-left text-sm font-semibold">Quick Code</th>
-          <th class="px-6 py-3 text-left text-sm font-semibold">Brand Name</th>
-          <th class="px-6 py-3 text-left text-sm font-semibold">Pack Size</th>
-          <th class="px-6 py-3 text-left text-sm font-semibold">Type</th>
-          <th class="px-6 py-3 text-left text-sm font-semibold">Dosage Form</th>
-          <th class="px-6 py-3 text-left text-sm font-semibold">Manufacturer</th>
-          <th class="px-6 py-3 text-center text-sm font-semibold">Action</th>
+          <th class="px-6 py-4 text-left text-sm font-semibold uppercase tracking-wider">Drug Name</th>
+          <th class="px-6 py-4 text-left text-sm font-semibold uppercase tracking-wider">Quick Code</th>
+          <th class="px-6 py-4 text-left text-sm font-semibold uppercase tracking-wider">Brand Name</th>
+          <th class="px-6 py-4 text-left text-sm font-semibold uppercase tracking-wider">Pack Size</th>
+          <th class="px-6 py-4 text-left text-sm font-semibold uppercase tracking-wider">Type</th>
+          <th class="px-6 py-4 text-left text-sm font-semibold uppercase tracking-wider">Dosage Form</th>
+          <th class="px-6 py-4 text-left text-sm font-semibold uppercase tracking-wider">Manufacturer</th>
+          <th class="px-6 py-4 text-center text-sm font-semibold uppercase tracking-wider">Action</th>
         </tr>
       </thead>
       <tbody class="divide-y divide-gray-100">
@@ -96,35 +99,32 @@
         <option *ngFor="let size of pageSizes" [value]="size">{{ size }} per page</option>
       </select>
       <span>
-        Showing {{ (pageNumber-1)*pageSize + 1 }} - {{ pageNumber*pageSize > totalCount ? totalCount : pageNumber*pageSize }} of {{ totalCount }} products
+        Showing {{ (pageNumber-1)*pageSize + 1 }} - {{ pageNumber*pageSize > totalCount ? totalCount :
+        pageNumber*pageSize }} of {{ totalCount }} products
       </span>
     </div>
     <div class="flex items-center gap-2">
       <button (click)="previousPage()" [disabled]="!hasPreviousPage"
         class="px-4 py-2 border rounded-lg disabled:opacity-50 hover:bg-gray-100">Previous</button>
-      <button *ngFor="let p of getVisiblePages()" (click)="goToPage(p)"
-        [class.bg-tati-burgundy]="p === pageNumber" [class.text-white]="p === pageNumber"
-        class="px-4 py-2 border rounded-lg hover:bg-gray-100">{{ p }}</button>
+      <button *ngFor="let p of getVisiblePages()" (click)="goToPage(p)" [class.bg-tati-burgundy]="p === pageNumber"
+        [class.text-white]="p === pageNumber" class="px-4 py-2 border rounded-lg hover:bg-gray-100">{{ p }}</button>
       <span *ngIf="totalPages > 5 && getVisiblePages()[4] < totalPages" class="px-4 py-2">... {{ totalPages }}</span>
       <button (click)="nextPage()" [disabled]="!hasNextPage"
         class="px-4 py-2 border rounded-lg disabled:opacity-50 hover:bg-gray-100">Next</button>
     </div>
   </div>
 
-    <div *ngIf="showExportModal" class="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
+  <div *ngIf="showExportModal" class="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
     <div class="bg-white rounded-xl w-96 p-6 shadow">
       <h3 class="font-semibold text-lg text-tati-burgundy mb-3">Export Products</h3>
       <p class="text-sm text-gray-600 mb-4">Choose a format and download the current list.</p>
       <div class="flex gap-3">
-        <button class="flex-1 px-4 py-2 border rounded-md hover:bg-gray-50 disabled:opacity-50"
-                [disabled]="isExporting"
-                (click)="export('pdf')">PDF</button>
-        <button class="flex-1 px-4 py-2 border rounded-md hover:bg-gray-50 disabled:opacity-50"
-                [disabled]="isExporting"
-                (click)="export('excel')">Excel</button>
-        <button class="flex-1 px-4 py-2 border rounded-md hover:bg-gray-50 disabled:opacity-50"
-                [disabled]="isExporting"
-                (click)="export('csv')">CSV</button>
+        <button class="flex-1 px-4 py-2 border rounded-md hover:bg-gray-50 disabled:opacity-50" [disabled]="isExporting"
+          (click)="export('pdf')">PDF</button>
+        <button class="flex-1 px-4 py-2 border rounded-md hover:bg-gray-50 disabled:opacity-50" [disabled]="isExporting"
+          (click)="export('excel')">Excel</button>
+        <button class="flex-1 px-4 py-2 border rounded-md hover:bg-gray-50 disabled:opacity-50" [disabled]="isExporting"
+          (click)="export('csv')">CSV</button>
       </div>
       <div *ngIf="isExporting" class="mt-4 flex items-center gap-2 text-sm text-gray-600">
         <i class="fas fa-spinner fa-spin"></i>
@@ -134,8 +134,7 @@
         {{ exportErrorMessage }}
       </div>
       <div class="mt-4 text-right">
-        <button
-          (click)="closeExportModal()"
+        <button (click)="closeExportModal()"
           class="px-4 py-2 text-sm text-tati-burgundy hover:opacity-80 transition disabled:text-gray-400"
           [disabled]="isExporting">
           Close
