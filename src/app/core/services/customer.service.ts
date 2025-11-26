@@ -15,9 +15,9 @@ import { InactiveCustomerDto } from '../../shared/models/inactive-customer-dto.m
 })
 export class CustomerService {
 
- private readonly apiUrl = ApiConfig.ENDPOINTS.CUSTOMER.BASE;
+  private readonly apiUrl = ApiConfig.ENDPOINTS.CUSTOMER.BASE;
 
-  constructor(private http: HttpClient) {}
+  constructor(private http: HttpClient) { }
 
   getPaged(filter: CustomerFilter): Observable<PagedResult<Customer>> {
     let params = new HttpParams()
@@ -53,42 +53,42 @@ export class CustomerService {
   }
 
   private mapToCustomers(dtos: CustomerDto[]): Customer[] {
-  return dtos.map(dto => ({
-    id: dto.customerId,
-    cusCode: dto.cusCode || '',
-    name: `${dto.cusFirstname || ''} ${dto.cusLastname || ''}`.trim() || 'Unknown',
-    email: dto.cusEmail || '',
-    phone: dto.cusMobileno || '',
-    status: dto.bitIsActive === true ? 'active' : 'inactive',  // Explicit boolean check
-    company: '',  // Still dummy – extend later
-    address: dto.address || '',
-    cusMobileno: dto.cusMobileno || '',
-    cusPhonenoO: dto.cusPhonenoO || '',
-    cusPhonenoR: dto.cusPhonenoR || '',
-    city: dto.city || '',
-    district: dto.district || '',
-    country: dto.country || '',
-    pin: dto.pin || '',
-    region: dto.region || '',
-    pbsllicense: dto.pbsllicense || '',
-    licenseType: dto.licenseType || '',
-    licenseExpiry: dto.licenseExpiry ?? null,
-    creditlim: dto.creditlim ?? 0,
-    creditdays: dto.creditdays ?? 0,
-    dateCreated: dto.dateCreated || '',
-    bitIsActive: dto.bitIsActive ?? false,  // Default to false if undefined
-    storeAmtremain: dto.storeAmtremain ?? 0,
-    storeAmtused: dto.storeAmtused ?? 0,
-    customerType: null,  // Not in list API yet
-    employee: null,      // Not in list API yet
-    totalOrders: 0,
-    lifetimeValue: 0,
-    lastPurchase: dto.dateCreated || '',
-    activePolicies: 0,
-    orderHistory: [],
-    engagement: []
-  }));
-}
+    return dtos.map(dto => ({
+      id: dto.customerId,
+      cusCode: dto.cusCode || '',
+      name: `${dto.cusFirstname || ''} ${dto.cusLastname || ''}`.trim() || 'Unknown',
+      email: dto.cusEmail || '',
+      phone: dto.cusMobileno || '',
+      status: dto.bitIsActive === true ? 'active' : 'inactive',  // Explicit boolean check
+      company: '',  // Still dummy – extend later
+      address: dto.address || '',
+      cusMobileno: dto.cusMobileno || '',
+      cusPhonenoO: dto.cusPhonenoO || '',
+      cusPhonenoR: dto.cusPhonenoR || '',
+      city: dto.city || '',
+      district: dto.district || '',
+      country: dto.country || '',
+      pin: dto.pin || '',
+      region: dto.region || '',
+      pbsllicense: dto.pbsllicense || '',
+      licenseType: dto.licenseType || '',
+      licenseExpiry: dto.licenseExpiry ?? null,
+      creditlim: dto.creditlim ?? 0,
+      creditdays: dto.creditdays ?? 0,
+      dateCreated: dto.dateCreated || '',
+      bitIsActive: dto.bitIsActive ?? false,  // Default to false if undefined
+      storeAmtremain: dto.storeAmtremain ?? 0,
+      storeAmtused: dto.storeAmtused ?? 0,
+      customerType: null,  // Not in list API yet
+      employee: null,      // Not in list API yet
+      totalOrders: 0,
+      lifetimeValue: 0,
+      lastPurchase: dto.dateCreated || '',
+      activePolicies: 0,
+      orderHistory: [],
+      engagement: []
+    }));
+  }
 
   private handleError(error: HttpErrorResponse): Observable<never> {
     let errorMsg = 'An unexpected error occurred';
@@ -113,99 +113,99 @@ export class CustomerService {
   }
 
   getById(id: number): Observable<CustomerDetailDto> {
-  return this.http.get<ApiResponse<CustomerDetailDto>>(ApiConfig.ENDPOINTS.CUSTOMER.BY_ID(id))
-    .pipe(
-      map(response => {
-        if (response.success && response.data) {
-          return response.data;
-        } else {
-          throw new Error(response.message || 'Failed to fetch customer');
-        }
-      }),
-      catchError(this.handleError)
-    );
-}
-
-// Add this method inside CustomerService class
-getInactivePaged(filter: { pageNumber: number; pageSize: number; day?: number }): Observable<PagedResult<Customer>> {
-  let params = new HttpParams()
-    .set('pageNumber', filter.pageNumber.toString())
-    .set('pageSize', filter.pageSize.toString());
-
-  if (filter.day !== undefined && filter.day !== null && filter.day > 0) {
-    params = params.set('day', filter.day.toString());
+    return this.http.get<ApiResponse<CustomerDetailDto>>(ApiConfig.ENDPOINTS.CUSTOMER.BY_ID(id))
+      .pipe(
+        map(response => {
+          if (response.success && response.data) {
+            return response.data;
+          } else {
+            throw new Error(response.message || 'Failed to fetch customer');
+          }
+        }),
+        catchError(this.handleError)
+      );
   }
 
-  const url = `${this.apiUrl}/inactive`; // https://localhost:44367/api/Customer/inactive
+  // Add this method inside CustomerService class
+  getInactivePaged(filter: { pageNumber: number; pageSize: number; day?: number }): Observable<PagedResult<Customer>> {
+    let params = new HttpParams()
+      .set('pageNumber', filter.pageNumber.toString())
+      .set('pageSize', filter.pageSize.toString());
 
-  return this.http.get<ApiResponse<PagedResult<InactiveCustomerDto>>>(url, { params })
-    .pipe(
-      map(response => {
-        if (response.success && response.data) {
-          return {
-            data: this.mapToInactiveCustomers(response.data.data),
-            totalCount: response.data.totalCount,
-            pageNumber: response.data.pageNumber,
-            pageSize: response.data.pageSize,
-            totalPages: response.data.totalPages || Math.ceil(response.data.totalCount / response.data.pageSize),
-            hasNextPage: response.data.hasNextPage,
-            hasPreviousPage: response.data.hasPreviousPage
-          };
-        } else {
-          throw new Error(response.message || 'Failed to fetch inactive customers');
-        }
+    if (filter.day !== undefined && filter.day !== null && filter.day > 0) {
+      params = params.set('day', filter.day.toString());
+    }
+
+    const url = `${this.apiUrl}/inactive`; // https://localhost:44367/api/Customer/inactive
+
+    return this.http.get<ApiResponse<PagedResult<InactiveCustomerDto>>>(url, { params })
+      .pipe(
+        map(response => {
+          if (response.success && response.data) {
+            return {
+              data: this.mapToInactiveCustomers(response.data.data),
+              totalCount: response.data.totalCount,
+              pageNumber: response.data.pageNumber,
+              pageSize: response.data.pageSize,
+              totalPages: response.data.totalPages || Math.ceil(response.data.totalCount / response.data.pageSize),
+              hasNextPage: response.data.hasNextPage,
+              hasPreviousPage: response.data.hasPreviousPage
+            };
+          } else {
+            throw new Error(response.message || 'Failed to fetch inactive customers');
+          }
+        }),
+        catchError(this.handleError)
+      );
+  }
+
+  // Add this method right below your existing mapToCustomers()
+  private mapToInactiveCustomers(dtos: InactiveCustomerDto[]): Customer[] {
+    return dtos.map(dto => ({
+      id: dto.customerId,
+      cusCode: dto.cusCode || '',
+      name: `${dto.cusFirstname || ''} ${dto.cusLastname || ''}`.trim() || 'Unknown',
+      email: dto.cusEmail || '',
+      phone: dto.cusMobileno || '',
+      status: dto.bitIsActive === false ? 'inactive' : 'active',
+      company: '',
+      address: dto.address || '',
+      cusMobileno: dto.cusMobileno || '',
+      cusPhonenoO: dto.cusPhonenoO || '',        // fallback to empty string
+      cusPhonenoR: dto.cusPhonenoR || '',        // fallback to empty string
+      city: dto.city || '',
+      district: dto.district || '',
+      country: dto.country || '',
+      pin: dto.pin || '',
+      region: dto.region || '',
+      pbsllicense: dto.pbsllicense || '',
+      licenseType: dto.licenseType || '',
+      licenseExpiry: dto.licenseExpiry ?? null,
+      creditlim: dto.creditlim ?? 0,
+      creditdays: dto.creditdays ?? 0,
+      dateCreated: dto.dateCreated || '',
+      bitIsActive: dto.bitIsActive ?? false,
+      storeAmtremain: dto.storeAmtremain ?? 0,
+      storeAmtused: dto.storeAmtused ?? 0,
+      customerType: null,
+      employee: null,
+      totalOrders: 0,
+      lifetimeValue: 0,
+      lastPurchase: dto.dateCreated || '',
+      activePolicies: 0,
+      orderHistory: [],
+      engagement: []
+    }));
+  }
+
+  searchMessageLogs(filter: any): Observable<any> {
+    const url = ApiConfig.ENDPOINTS.MESSAGE_LOG.SEARCH;
+    return this.http.post<ApiResponse<any>>(url, filter).pipe(
+      map(res => {
+        if (res.success) return res;
+        throw new Error(res.message || 'Failed to search logs');
       }),
       catchError(this.handleError)
     );
-}
-
-// Add this method right below your existing mapToCustomers()
-private mapToInactiveCustomers(dtos: InactiveCustomerDto[]): Customer[] {
-  return dtos.map(dto => ({
-    id: dto.customerId,
-    cusCode: dto.cusCode || '',
-    name: `${dto.cusFirstname || ''} ${dto.cusLastname || ''}`.trim() || 'Unknown',
-    email: dto.cusEmail || '',
-    phone: dto.cusMobileno || '',
-    status: dto.bitIsActive === false ? 'inactive' : 'active',
-    company: '',
-    address: dto.address || '',
-    cusMobileno: dto.cusMobileno || '',
-    cusPhonenoO: dto.cusPhonenoO || '',        // fallback to empty string
-    cusPhonenoR: dto.cusPhonenoR || '',        // fallback to empty string
-    city: dto.city || '',
-    district: dto.district || '',
-    country: dto.country || '',
-    pin: dto.pin || '',
-    region: dto.region || '',
-    pbsllicense: dto.pbsllicense || '',
-    licenseType: dto.licenseType || '',
-    licenseExpiry: dto.licenseExpiry ?? null,
-    creditlim: dto.creditlim ?? 0,
-    creditdays: dto.creditdays ?? 0,
-    dateCreated: dto.dateCreated || '',
-    bitIsActive: dto.bitIsActive ?? false,
-    storeAmtremain: dto.storeAmtremain ?? 0,
-    storeAmtused: dto.storeAmtused ?? 0,
-    customerType: null,
-    employee: null,
-    totalOrders: 0,
-    lifetimeValue: 0,
-    lastPurchase: dto.dateCreated || '',
-    activePolicies: 0,
-    orderHistory: [],
-    engagement: []
-  }));
-}
-
-searchMessageLogs(filter: any): Observable<any> {
-  const url = 'https://localhost:44367/api/MessageLog/search';
-  return this.http.post<ApiResponse<any>>(url, filter).pipe(
-    map(res => {
-      if (res.success) return res;
-      throw new Error(res.message || 'Failed to search logs');
-    }),
-    catchError(this.handleError)
-  );
-}
+  }
 }

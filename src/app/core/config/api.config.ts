@@ -63,7 +63,11 @@ export class ApiConfig {
     },
 
     WHATSAPP: {
-      BASE : `${ApiConfig.BASE_URL}/WhatsApp`
+      BASE: `${ApiConfig.BASE_URL}/WhatsApp`
+    },
+
+    MESSAGE_LOG: {
+      SEARCH: `${ApiConfig.BASE_URL}/MessageLog/search`
     }
   };
 }
