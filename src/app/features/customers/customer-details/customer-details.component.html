@@ -18,7 +18,7 @@
         <p class="text-gray-600 mt-1">Customer ID: #{{ customerId }}</p>
         <div class="mt-2">
           <span class="inline-flex px-3 py-1 rounded-full text-sm font-medium"
-            [ngClass]="customer?.bitIsActive ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'">
+            [ngClass]="customer.bitIsActive ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'">
             {{ customerStatus }}
           </span>
         </div>
@@ -39,9 +39,9 @@
           <h3 class="text-lg font-semibold text-tati-burgundy mb-3 border-b border-gray-200 pb-2">Basic Information</h3>
           <div class="space-y-2 text-sm">
             <p><span class="font-medium text-gray-700">Customer Code:</span> <span class="text-gray-500">{{
-                customer?.cusCode || 'N/A' }}</span></p>
+                customer.cusCode || 'N/A' }}</span></p>
             <p><span class="font-medium text-gray-700">Created Date:</span> <span class="text-gray-500">{{
-                formatDate(customer?.dateCreated) }}</span></p>
+                formatDate(customer.dateCreated) }}</span></p>
           </div>
         </div>
 
@@ -49,14 +49,15 @@
         <div class="mb-6">
           <h3 class="text-lg font-semibold text-tati-burgundy mb-3 border-b border-gray-200 pb-2">Contact Details</h3>
           <div class="space-y-2 text-sm">
-            <p><span class="font-medium text-gray-700">Email:</span> <span class="text-gray-500">{{ customer?.cusEmail ||
+            <p><span class="font-medium text-gray-700">Email:</span> <span class="text-gray-500">{{ customer.cusEmail
+                ||
                 'N/A' }}</span></p>
             <p><span class="font-medium text-gray-700">Mobile:</span> <span class="text-gray-500">{{
-                customer?.cusMobileno || 'N/A' }}</span></p>
+                customer.cusMobileno || 'N/A' }}</span></p>
             <p><span class="font-medium text-gray-700">Office Phone:</span> <span class="text-gray-500">{{
-                customer?.cusPhonenoO || 'N/A' }}</span></p>
+                customer.cusPhonenoO || 'N/A' }}</span></p>
             <p><span class="font-medium text-gray-700">Residence Phone:</span> <span class="text-gray-500">{{
-                customer?.cusPhonenoR || 'N/A' }}</span></p>
+                customer.cusPhonenoR || 'N/A' }}</span></p>
           </div>
         </div>
 
@@ -64,17 +65,17 @@
         <div class="mb-6">
           <h3 class="text-lg font-semibold text-tati-burgundy mb-3 border-b border-gray-200 pb-2">Address</h3>
           <div class="space-y-2 text-sm">
-            <p><span class="font-medium text-gray-700">Address:</span> <span class="text-gray-500">{{ customer?.address
+            <p><span class="font-medium text-gray-700">Address:</span> <span class="text-gray-500">{{ customer.address
                 || 'N/A' }}</span></p>
-            <p><span class="font-medium text-gray-700">City:</span> <span class="text-gray-500">{{ customer?.city ||
+            <p><span class="font-medium text-gray-700">City:</span> <span class="text-gray-500">{{ customer.city ||
                 'N/A' }}</span></p>
             <p><span class="font-medium text-gray-700">District:</span> <span class="text-gray-500">{{
-                customer?.district || 'N/A' }}</span></p>
-            <p><span class="font-medium text-gray-700">Region:</span> <span class="text-gray-500">{{ customer?.region ||
+                customer.district || 'N/A' }}</span></p>
+            <p><span class="font-medium text-gray-700">Region:</span> <span class="text-gray-500">{{ customer.region ||
                 'N/A' }}</span></p>
-            <p><span class="font-medium text-gray-700">Country:</span> <span class="text-gray-500">{{ customer?.country
+            <p><span class="font-medium text-gray-700">Country:</span> <span class="text-gray-500">{{ customer.country
                 || 'N/A' }}</span></p>
-            <p><span class="font-medium text-gray-700">PIN Code:</span> <span class="text-gray-500">{{ customer?.pin ||
+            <p><span class="font-medium text-gray-700">PIN Code:</span> <span class="text-gray-500">{{ customer.pin ||
                 'N/A' }}</span></p>
           </div>
         </div>
@@ -87,13 +88,13 @@
           <h3 class="text-lg font-semibold text-tati-burgundy mb-3 border-b border-gray-200 pb-2">Financial Details</h3>
           <div class="space-y-2 text-sm">
             <p><span class="font-medium text-gray-700">Credit Limit:</span> <span class="text-gray-500">{{
-                formatCurrency(customer?.creditlim || 0) }}</span></p>
+                formatCurrency(customer.creditlim || 0) }}</span></p>
             <p><span class="font-medium text-gray-700">Credit Days:</span> <span class="text-gray-500">{{
-                customer?.creditdays || 'N/A' }}</span></p>
+                customer.creditdays || 'N/A' }}</span></p>
             <p><span class="font-medium text-gray-700">Store Amount Remaining:</span> <span class="text-gray-500">{{
-                formatCurrency(customer?.storeAmtremain || 0) }}</span></p>
+                formatCurrency(customer.storeAmtremain || 0) }}</span></p>
             <p><span class="font-medium text-gray-700">Store Amount Used:</span> <span class="text-gray-500">{{
-                formatCurrency(customer?.storeAmtused || 0) }}</span></p>
+                formatCurrency(customer.storeAmtused || 0) }}</span></p>
           </div>
         </div>
 
@@ -103,31 +104,17 @@
           </h3>
           <div class="space-y-2 text-sm">
             <p><span class="font-medium text-gray-700">PBSL License:</span> <span class="text-gray-500">{{
-                customer?.pbsllicense || 'N/A' }}</span></p>
+                customer.pbsllicense || 'N/A' }}</span></p>
             <p><span class="font-medium text-gray-700">License Type:</span> <span class="text-gray-500">{{
-                customer?.licenseType || 'N/A' }}</span></p>
+                customer.licenseType || 'N/A' }}</span></p>
             <p><span class="font-medium text-gray-700">Expiry Date:</span> <span class="text-gray-500">{{
-                formatDate(customer?.licenseExpiry) }}</span></p>
+                formatDate(customer.licenseExpiry) }}</span></p>
           </div>
         </div>
 
         <!-- Customer Type -->
-        <div *ngIf="customer?.customerType" class="mb-6">
+        <div *ngIf="customer.customerType" class="mb-6">
           <h3 class="text-lg font-semibold text-tati-burgundy mb-3 border-b border-gray-200 pb-2">Customer Type</h3>
-          <div class="space-y-2 text-sm">
-            <p><span class="font-medium text-gray-700">Type Name:</span> <span class="text-gray-500">{{
-                customer?.customerType?.cusTypeName || 'N/A' }}</span></p>
-            <p><span class="font-medium text-gray-700">Active:</span>
-              <span class="text-gray-500">{{ customer?.customerType?.bitIsActive ? 'Yes' : 'No' }}</span>
-            </p>
-            <p><span class="font-medium text-gray-700">Created:</span> <span class="text-gray-500">{{
-                formatDate(customer?.customerType?.dateCreated) }}</span></p>
-          </div>
-        </div>
-
-        <!-- Assigned Employee -->
-        <div *ngIf="customer?.employee" class="mb-6">
-          <h3 class="text-lg font-semibold text-tati-burgundy mb-3 border-b border-gray-200 pb-2">Assigned Employee</h3>
           <div class="space-y-2 text-sm">
             <p><span class="font-medium text-gray-700">Name:</span> <span class="text-gray-500">{{
                 customer.employee?.employeeName || 'N/A' }}</span></p>
@@ -207,7 +194,7 @@
           </tr>
         </thead>
         <tbody class="divide-y">
-          <tr *ngFor="let order of customer?.orderHistory || []">
+          <tr *ngFor="let order of customer.orderHistory || []">
             <td class="px-6 py-3">{{ order.orderId }}</td>
             <td class="px-6 py-3">{{ order.date | date:'medium' }}</td>
             <td class="px-6 py-3">{{ order.items | number }}</td>
@@ -216,7 +203,7 @@
               {{ order.status }}
             </td>
           </tr>
-          <tr *ngIf="!customer?.orderHistory?.length">
+          <tr *ngIf="!customer.orderHistory?.length">
             <td colspan="5" class="px-6 py-3 text-center text-gray-600">No orders found.</td>
           </tr>
         </tbody>
@@ -231,12 +218,13 @@
     </div>
     <div class="p-6">
       <ul class="list-disc ml-5 text-gray-700">
-        <li *ngFor="let engagement of customer?.engagement || []">
-          <span class="font-medium">{{ engagement.type }}</span> - 
-          <span>{{ engagement.date | date:'medium' }}</span> — 
-          <span [ngClass]="engagement.status === 'Completed' ? 'text-green-600' : 'text-yellow-600'">{{ engagement.status }}</span>
+        <li *ngFor="let engagement of customer.engagement || []">
+          <span class="font-medium">{{ engagement.type }}</span> -
+          <span>{{ engagement.date | date:'medium' }}</span> —
+          <span [ngClass]="engagement.status === 'Completed' ? 'text-green-600' : 'text-yellow-600'">{{
+            engagement.status }}</span>
         </li>
-        <li *ngIf="!customer?.engagement?.length" class="text-gray-600">No engagement records found.</li>
+        <li *ngIf="!customer.engagement?.length" class="text-gray-600">No engagement records found.</li>
       </ul>
     </div>
   </div>

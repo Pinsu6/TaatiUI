@@ -16,6 +16,7 @@ export class PaymentReminderComponent implements OnInit, OnDestroy {
 
   // selection via checkboxes (same feel as order summary page)
   selectedCustomers: number[] = [];
+  selectAllMode = false; // Track if "Select All" across pages is active
 
   // global fields applied to selected customers
   outstandingAmount: number | null = null;
@@ -40,7 +41,7 @@ export class PaymentReminderComponent implements OnInit, OnDestroy {
   constructor(
     private readonly customerService: CustomerService,
     private readonly whatsappService: WhatsappService
-  ) {}
+  ) { }
 
   ngOnInit(): void {
     this.loadCustomers();
@@ -167,20 +168,48 @@ export class PaymentReminderComponent implements OnInit, OnDestroy {
     } else {
       this.selectedCustomers.push(customerId);
     }
+    // If deselecting, turn off select all mode
+    if (!this.selectedCustomers.includes(customerId)) {
+      this.selectAllMode = false;
+    }
   }
 
   toggleSelectAll(event: Event): void {
     const checkbox = event.target as HTMLInputElement;
     if (checkbox.checked) {
-      this.selectedCustomers = this.customers.map(c => c.id);
+      this.selectAllMode = true;
+
+      // Optimistically select current page items
+      const currentPageIds = this.customers.map(c => c.id);
+      this.selectedCustomers = [...new Set([...this.selectedCustomers, ...currentPageIds])];
+
+      // Load all customers in background
+      this.customerService.getPaged({
+        pageNumber: 1,
+        pageSize: this.totalCount > 0 ? this.totalCount : 10000
+      }).subscribe({
+        next: (result) => {
+          this.selectedCustomers = result.data.map(c => c.id);
+          console.log(`Loaded ${this.selectedCustomers.length} customers for selection`);
+        },
+        error: (err) => {
+          console.error('Failed to load all customers for selection', err);
+        }
+      });
     } else {
       this.selectedCustomers = [];
+      this.selectAllMode = false;
     }
   }
 
   isAllSelected(): boolean {
+    if (this.selectAllMode) return true;
     return this.customers.length > 0 &&
       this.customers.every(c => this.selectedCustomers.includes(c.id));
+  }
+
+  isCustomerSelected(customerId: number): boolean {
+    return this.selectAllMode || this.selectedCustomers.includes(customerId);
   }
 
   // Pagination helpers

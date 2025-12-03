@@ -4,6 +4,7 @@ export interface MessageLog {
   customerName: string;
   recipient: string;
   messageContent: string;
+  contentSid?: string;
   apiEndpoint: string;
   status: string;
   gatewayResponse: string;

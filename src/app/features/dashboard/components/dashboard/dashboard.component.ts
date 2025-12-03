@@ -9,6 +9,7 @@ import { TopPharmacyDto } from '../../../../shared/models/top-pharmacy-dto.model
 import { HelperProductDto } from '../../../../shared/models/helper-product-dto.model';
 import { HelperCityDto } from '../../../../shared/models/helper-city-dto.model';
 import { HelperDrugTypeDto } from '../../../../shared/models/helper-drug-type-dto.model';
+import { ProductCategoryDto } from '../../../../shared/models/product-category-dto.model';
 import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 
@@ -33,7 +34,17 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
   selectedCity: string | null = null;
   selectedTimePeriod: string = 'Last 30 days';
   drugTypes: HelperDrugTypeDto[] = [];
-  
+  categoryShares: ProductCategoryDto[] = [];
+
+  private readonly defaultCategoryShares: ProductCategoryDto[] = [
+    { category: 'Drug', share: 34.5 },
+    { category: 'Cosmetic', share: 22.1 },
+    { category: 'Food', share: 16.4 },
+    { category: 'Non-Rx/OTC', share: 12.7 },
+    { category: 'OTHER', share: 8.1 },
+    { category: 'Solar Equipment', share: 6.2 }
+  ];
+
   loading = true;
   error: string | null = null;
 
@@ -81,12 +92,30 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
           this.dashboardData = data;
           this.updateKPIs(data);
           this.updatePharmacies(data);
+          this.updateCategoryShares(data);
           // Update products, cities, drugTypes from dashboard API response
           if (data.products) {
             this.products = data.products;
           }
           if (data.cities) {
-            this.cities = data.cities;
+            // Deduplicate cities: normalize names like "Kenema" and "kenema city" -> "Kenema"
+            // "Bo" and "Bo city" -> "Bo", "Kambia" and "Kambia 1" -> "Kambia"
+            const cityMap = new Map<string, HelperCityDto>();
+            data.cities.forEach(city => {
+              const normalizedName = city.cityName
+                .toLowerCase()
+                .replace(/\s+(city|1)$/i, '') // Remove " city" or " 1" suffix
+                .trim();
+
+              // Keep the first occurrence (usually the cleaner name)
+              if (!cityMap.has(normalizedName)) {
+                cityMap.set(normalizedName, {
+                  ...city,
+                  cityName: city.cityName.replace(/\s+(city|1)$/i, '').trim() || city.cityName
+                });
+              }
+            });
+            this.cities = Array.from(cityMap.values());
           }
           if (data.drugTypes) {
             this.drugTypes = data.drugTypes;
@@ -113,10 +142,10 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
     };
 
     console.log('Applying filters:', filterData);
-    
+
     this.loading = true;
     this.error = null;
-    
+
     this.analyticsService.getDashboardWithFilters(filterData)
       .pipe(takeUntil(this.destroy$))
       .subscribe({
@@ -124,12 +153,28 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
           this.dashboardData = data;
           this.updateKPIs(data);
           this.updatePharmacies(data);
+          this.updateCategoryShares(data);
           // Update products, cities, drugTypes from dashboard API response
           if (data.products) {
             this.products = data.products;
           }
           if (data.cities) {
-            this.cities = data.cities;
+            // Deduplicate cities
+            const cityMap = new Map<string, HelperCityDto>();
+            data.cities.forEach(city => {
+              const normalizedName = city.cityName
+                .toLowerCase()
+                .replace(/\s+(city|1)$/i, '')
+                .trim();
+
+              if (!cityMap.has(normalizedName)) {
+                cityMap.set(normalizedName, {
+                  ...city,
+                  cityName: city.cityName.replace(/\s+(city|1)$/i, '').trim() || city.cityName
+                });
+              }
+            });
+            this.cities = Array.from(cityMap.values());
           }
           if (data.drugTypes) {
             this.drugTypes = data.drugTypes;
@@ -207,6 +252,7 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
     if (salesCtx && this.dashboardData.revenuePerformance) {
       const revenueData = this.dashboardData.revenuePerformance;
       const labels = revenueData.map(item => item.month);
+      const retailData = revenueData.map(item => item.retail);
       const wholesaleData = revenueData.map(item => item.wholesale);
 
       this.salesChart = new Chart(salesCtx, {
@@ -215,36 +261,116 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
           labels: labels,
           datasets: [
             {
+              label: 'Retail Sales',
+              data: retailData,
+              borderWidth: 3,
+              tension: 0.4,
+              borderColor: '#8B1538',
+              backgroundColor: (ctx: any) => {
+                const g = ctx.chart.ctx.createLinearGradient(0, 0, 0, 400);
+                g.addColorStop(0, 'rgba(139,21,56,0.2)');
+                g.addColorStop(1, 'rgba(139,21,56,0)');
+                return g;
+              },
+              pointRadius: 4,
+              pointHoverRadius: 6,
+              pointBackgroundColor: '#8B1538',
+              pointBorderColor: '#fff',
+              pointBorderWidth: 2,
+              fill: true
+            },
+            {
               label: 'Wholesale Sales',
               data: wholesaleData,
-              borderWidth: 2,
-              tension: 0.3,
+              borderWidth: 3,
+              tension: 0.4,
               borderColor: '#F59E0B',
               backgroundColor: (ctx: any) => {
                 const g = ctx.chart.ctx.createLinearGradient(0, 0, 0, 400);
-                g.addColorStop(0, 'rgba(245,158,11,0.18)');
+                g.addColorStop(0, 'rgba(245,158,11,0.2)');
                 g.addColorStop(1, 'rgba(245,158,11,0)');
                 return g;
               },
-              pointRadius: 2,
+              pointRadius: 4,
+              pointHoverRadius: 6,
+              pointBackgroundColor: '#F59E0B',
+              pointBorderColor: '#fff',
+              pointBorderWidth: 2,
               fill: true
             }
           ]
         },
         options: {
           responsive: true,
-          plugins: { legend: { position: 'top' } },
+          maintainAspectRatio: true,
+          interaction: {
+            mode: 'index',
+            intersect: false,
+          },
+          plugins: {
+            legend: {
+              position: 'top',
+              labels: {
+                usePointStyle: true,
+                padding: 15,
+                font: {
+                  size: 12,
+                  weight: 500
+                }
+              }
+            },
+            tooltip: {
+              backgroundColor: 'rgba(0, 0, 0, 0.8)',
+              titleColor: '#fff',
+              bodyColor: '#fff',
+              padding: 12,
+              displayColors: true,
+              callbacks: {
+                label: function (context: any) {
+                  let label = context.dataset.label || '';
+                  if (label) {
+                    label += ': ';
+                  }
+                  const value = context.parsed.y;
+                  if (value >= 1000000) {
+                    label += 'SLL ' + (value / 1000000).toFixed(2) + 'M';
+                  } else if (value >= 1000) {
+                    label += 'SLL ' + (value / 1000).toFixed(2) + 'K';
+                  } else {
+                    label += 'SLL ' + value.toLocaleString();
+                  }
+                  return label;
+                }
+              }
+            }
+          },
           scales: {
             y: {
               beginAtZero: true,
+              grid: {
+                color: 'rgba(0, 0, 0, 0.05)',
+              },
               ticks: {
-                callback: function(value: any) { 
+                callback: function (value: any) {
                   if (value >= 1000000) {
-                    return (value / 1000000).toFixed(1) + 'M';
+                    return 'SLL ' + (value / 1000000).toFixed(1) + 'M';
                   } else if (value >= 1000) {
-                    return (value / 1000).toFixed(1) + 'K';
+                    return 'SLL ' + (value / 1000).toFixed(1) + 'K';
                   }
-                  return value.toLocaleString(); 
+                  return 'SLL ' + value.toLocaleString();
+                },
+                font: {
+                  size: 11
+                }
+              }
+            },
+            x: {
+              grid: {
+                display: false,
+              },
+              ticks: {
+                font: {
+                  size: 11
                 }
               }
             }
@@ -333,5 +459,25 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
 
   // Products, cities, and drugTypes are now loaded from the dashboard API response
   // No need for separate API calls
+
+  private updateCategoryShares(data: DashboardDto) {
+    if (data.productCategories && data.productCategories.length > 0) {
+      this.categoryShares = [...data.productCategories].sort((a, b) => b.share - a.share);
+    } else {
+      this.categoryShares = this.defaultCategoryShares;
+    }
+  }
+
+  getCategoryColor(category: string): string {
+    const colorMap: { [key: string]: string } = {
+      'Drug': '#8B1538',
+      'Cosmetic': '#D4AF37',
+      'Food': '#10B981',
+      'Non-Rx/OTC': '#7C3AED',
+      'OTHER': '#F97316',
+      'Solar Equipment': '#8B5CF6'
+    };
+    return colorMap[category] || '#6B7280';
+  }
 
 }

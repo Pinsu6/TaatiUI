@@ -6,8 +6,8 @@
         <h2 class="text-2xl font-bold text-gray-900">Message Log</h2>
         <p class="text-gray-600 text-sm mt-1">Track all sent WhatsApp & SMS messages</p>
       </div>
-      <button (click)="refresh()" 
-              class="px-4 py-2 border border-tati-burgundy text-tati-burgundy rounded-md hover:bg-tati-burgundy hover:text-white transition flex items-center gap-2">
+      <button (click)="refresh()"
+        class="px-4 py-2 border border-tati-burgundy text-tati-burgundy rounded-md hover:bg-tati-burgundy hover:text-white transition flex items-center gap-2">
         <i class="fas fa-sync-alt"></i> Refresh
       </button>
     </div>
@@ -19,14 +19,13 @@
       <!-- Search -->
       <div class="relative">
         <i class="fas fa-search absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
-        <input type="text" [(ngModel)]="searchQuery" (input)="onSearch()"
-               placeholder="Search by name, phone, message..."
-               class="w-full pl-10 pr-4 py-2 border rounded-lg focus:ring-2 focus:ring-tati-burgundy outline-none">
+        <input type="text" [(ngModel)]="searchQuery" (input)="onSearch()" placeholder="Search by name, phone..."
+          class="w-full pl-10 pr-4 py-2 border rounded-lg focus:ring-2 focus:ring-tati-burgundy outline-none">
       </div>
 
       <!-- Status Filter -->
       <select [(ngModel)]="selectedStatus" (change)="applyFilters()"
-              class="px-4 py-2 border rounded-lg focus:ring-2 focus:ring-tati-burgundy outline-none">
+        class="px-4 py-2 border rounded-lg focus:ring-2 focus:ring-tati-burgundy outline-none">
         <option value="">All Status</option>
         <option value="Sent">Sent</option>
         <option value="Delivered">Delivered</option>
@@ -34,34 +33,20 @@
         <option value="Pending">Pending</option>
       </select>
 
-      <!-- Endpoint Filter -->
-      <!-- <select [(ngModel)]="selectedEndpoint" (change)="applyFilters()"
-              class="px-4 py-2 border rounded-lg focus:ring-2 focus:ring-tati-burgundy outline-none">
-        <option value="">All Gateways</option>
-        <option value="WhatsApp">WhatsApp</option>
-        <option value="SMS">SMS</option>
-      </select> -->
-
       <!-- Date Range -->
       <div class="flex gap-2">
         <input type="date" [(ngModel)]="fromDate" (change)="applyFilters()"
-               class="px-4 py-2 border rounded-lg focus:ring-2 focus:ring-tati-burgundy outline-none">
+          class="px-4 py-2 border rounded-lg focus:ring-2 focus:ring-tati-burgundy outline-none">
         <input type="date" [(ngModel)]="toDate" (change)="applyFilters()"
-               class="px-4 py-2 border rounded-lg focus:ring-2 focus:ring-tati-burgundy outline-none">
+          class="px-4 py-2 border rounded-lg focus:ring-2 focus:ring-tati-burgundy outline-none">
       </div>
 
-      <div class="flex justify-end"> 
+      <div class="flex justify-end">
         <button (click)="clearFilters()" class="text-sm text-gray-600 hover:text-tati-burgundy underline">
           Clear all filters
         </button>
       </div>
     </div>
-
-    <!-- <div class="mt-4 flex justify-end">
-      <button (click)="clearFilters()" class="text-sm text-gray-600 hover:text-tati-burgundy underline">
-        Clear all filters
-      </button>
-    </div> -->
   </div>
 
   <!-- Loading -->
@@ -86,7 +71,7 @@
           <th class="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider">Date</th>
           <th class="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider">Customer</th>
           <th class="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider">Phone</th>
-          <th class="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider">Message</th>
+          <th class="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider">Message Content</th>
           <th class="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider">Gateway</th>
           <th class="px-6 py-3 text-center text-xs font-semibold uppercase tracking-wider">Status</th>
         </tr>
@@ -102,24 +87,21 @@
           <td class="px-6 py-4 text-sm text-gray-600">
             {{ log.recipient }}
           </td>
-          <td class="px-6 py-4 text-sm text-gray-700 max-w-xs truncate">
-            {{ log.messageContent }}
+          <td class="px-6 py-4 text-sm text-gray-700">
+            <div class="whitespace-pre-wrap">{{ log.messageContent }}</div>
           </td>
           <td class="px-6 py-4 text-sm">
-            <span class="px-2 py-1 text-xs rounded-full"
-                  [class.bg-blue-100]="log.apiEndpoint.includes('WhatsApp')"
-                  [class.bg-purple-100]="log.apiEndpoint.includes('SMS')">
+            <span class="px-2 py-1 text-xs rounded-full" [class.bg-blue-100]="log.apiEndpoint.includes('WhatsApp')"
+              [class.bg-purple-100]="log.apiEndpoint.includes('SMS')">
               {{ log.apiEndpoint.split('/').pop() || log.apiEndpoint }}
             </span>
           </td>
           <td class="px-6 py-4 text-center">
             <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium"
-                  [class.bg-green-100]="log.status === 'Delivered' || log.status === 'Sent'"
-                  [class.bg-red-100]="log.status === 'Failed'"
-                  [class.bg-yellow-100]="log.status === 'Pending'"
-                  [class.text-green-800]="log.status === 'Delivered' || log.status === 'Sent'"
-                  [class.text-red-800]="log.status === 'Failed'"
-                  [class.text-yellow-800]="log.status === 'Pending'">
+              [class.bg-green-100]="log.status === 'Delivered' || log.status === 'Sent'"
+              [class.bg-red-100]="log.status === 'Failed'" [class.bg-yellow-100]="log.status === 'Pending'"
+              [class.text-green-800]="log.status === 'Delivered' || log.status === 'Sent'"
+              [class.text-red-800]="log.status === 'Failed'" [class.text-yellow-800]="log.status === 'Pending'">
               {{ log.status }}
             </span>
           </td>
@@ -136,25 +118,24 @@
   </div>
 
   <!-- Pagination -->
-  <div *ngIf="!isLoading && totalCount > 0" class="flex justify-between items-center bg-white rounded-xl p-4 border shadow mt-6">
+  <div *ngIf="!isLoading && totalCount > 0"
+    class="flex justify-between items-center bg-white rounded-xl p-4 border shadow mt-6">
     <div class="text-sm text-gray-600">
-      Showing {{ (pageNumber-1)*pageSize + 1 }} - 
+      Showing {{ (pageNumber-1)*pageSize + 1 }} -
       {{ pageNumber*pageSize > totalCount ? totalCount : pageNumber*pageSize }}
       of {{ totalCount }} messages
     </div>
     <div class="flex items-center gap-2">
       <button (click)="previousPage()" [disabled]="!hasPreviousPage"
-              class="px-4 py-2 border rounded-lg disabled:opacity-50 hover:bg-gray-100">
+        class="px-4 py-2 border rounded-lg disabled:opacity-50 hover:bg-gray-100">
         Previous
       </button>
-      <button *ngFor="let p of getVisiblePages()" (click)="goToPage(p)"
-              [class.bg-tati-burgundy]="p === pageNumber"
-              [class.text-white]="p === pageNumber"
-              class="px-4 py-2 border rounded-lg hover:bg-gray-100">
+      <button *ngFor="let p of getVisiblePages()" (click)="goToPage(p)" [class.bg-tati-burgundy]="p === pageNumber"
+        [class.text-white]="p === pageNumber" class="px-4 py-2 border rounded-lg hover:bg-gray-100">
         {{ p }}
       </button>
       <button (click)="nextPage()" [disabled]="!hasNextPage"
-              class="px-4 py-2 border rounded-lg disabled:opacity-50 hover:bg-gray-100">
+        class="px-4 py-2 border rounded-lg disabled:opacity-50 hover:bg-gray-100">
         Next
       </button>
     </div>

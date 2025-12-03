@@ -13,7 +13,7 @@ import { FormsModule } from '@angular/forms';
 export class MessageLogComponent {
 
   messageLogs: MessageLog[] = [];
-  
+
   // Filters
   searchQuery = '';
   selectedStatus = '';
@@ -36,7 +36,7 @@ export class MessageLogComponent {
   private searchSubject = new Subject<string>();
   private subscriptions = new Subscription();
 
-  constructor(private customerService: CustomerService) {}
+  constructor(private customerService: CustomerService) { }
 
   ngOnInit(): void {
     this.searchSubject.pipe(debounceTime(400)).subscribe(() => {
@@ -67,8 +67,10 @@ export class MessageLogComponent {
     this.subscriptions.add(
       this.customerService.searchMessageLogs(payload).subscribe({
         next: (result: any) => {
+          console.log('API Result:', result); // Debug log
           if (result.success && result.data) {
             this.messageLogs = result.data.data;
+            console.log('Message Logs:', this.messageLogs); // Debug log to see messageContent
             this.totalCount = result.data.totalCount;
             this.totalPages = result.data.totalPages;
             this.hasNextPage = result.data.hasNextPage;

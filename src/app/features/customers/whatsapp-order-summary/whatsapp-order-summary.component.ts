@@ -15,6 +15,7 @@ import { WhatsAppBroadcastResponse } from '../../../shared/models/whatsapp-broad
 export class WhatsappOrderSummaryComponent implements OnInit, OnDestroy {
   customers: Customer[] = [];
   selectedCustomers: number[] = [];
+  selectAllMode = false; // Track if "Select All" across pages is active
 
   // Pagination
   pageNumber = 1;
@@ -27,6 +28,7 @@ export class WhatsappOrderSummaryComponent implements OnInit, OnDestroy {
 
   // Filters
   summaryDays = 30;
+  outstandingAmount: number | null = null;
 
   // UI
   isLoading = true;
@@ -38,7 +40,7 @@ export class WhatsappOrderSummaryComponent implements OnInit, OnDestroy {
   constructor(
     private readonly customerService: CustomerService,
     private readonly whatsappService: WhatsappService
-  ) {}
+  ) { }
 
   ngOnInit(): void {
     this.loadCustomers();
@@ -85,19 +87,48 @@ export class WhatsappOrderSummaryComponent implements OnInit, OnDestroy {
     } else {
       this.selectedCustomers.push(customerId);
     }
+    // If deselecting, turn off select all mode
+    if (!this.selectedCustomers.includes(customerId)) {
+      this.selectAllMode = false;
+    }
   }
 
   toggleSelectAll(event: Event): void {
     const checkbox = event.target as HTMLInputElement;
     if (checkbox.checked) {
-      this.selectedCustomers = this.customers.map(c => c.id);
+      this.selectAllMode = true;
+
+      // Optimistically select current page items so UI updates instantly
+      const currentPageIds = this.customers.map(c => c.id);
+      this.selectedCustomers = [...new Set([...this.selectedCustomers, ...currentPageIds])];
+
+      // Select all customers across all pages in background
+      this.customerService.getPaged({
+        pageNumber: 1,
+        pageSize: this.totalCount > 0 ? this.totalCount : 10000 // Try to get all
+      }).subscribe({
+        next: (result: PagedResult<Customer>) => {
+          this.selectedCustomers = result.data.map(c => c.id);
+          console.log(`Loaded ${this.selectedCustomers.length} customers for selection`);
+        },
+        error: (err: any) => {
+          console.error('Failed to load all customers for selection', err);
+        }
+      });
     } else {
       this.selectedCustomers = [];
+      this.selectAllMode = false;
     }
   }
 
   isAllSelected(): boolean {
-    return this.customers.length > 0 && this.customers.every(c => this.selectedCustomers.includes(c.id));
+    if (this.selectAllMode) return true;
+    return this.customers.length > 0 &&
+      this.customers.every(c => this.selectedCustomers.includes(c.id));
+  }
+
+  isCustomerSelected(customerId: number): boolean {
+    return this.selectAllMode || this.selectedCustomers.includes(customerId);
   }
 
   sendOrderSummary(): void {
@@ -134,6 +165,7 @@ export class WhatsappOrderSummaryComponent implements OnInit, OnDestroy {
           alert(response.message || 'Failed to send order summary');
         }
         this.selectedCustomers = [];
+        this.selectAllMode = false;
       },
       error: (err) => {
         this.isSending = false;

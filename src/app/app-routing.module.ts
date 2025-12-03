@@ -26,12 +26,12 @@ const routes: Routes = [
     path: 'message-log',
     loadChildren: () => import('./features/message-log/message-log.module').then(m => m.MessageLogModul),
     canActivate: [AuthGuard]
-  }, 
+  },
   { path: '**', redirectTo: '/login' }
 ];
 
 @NgModule({
-  imports: [RouterModule.forRoot(routes)],
+  imports: [RouterModule.forRoot(routes, { useHash: true })],
   exports: [RouterModule]
 })
 export class AppRoutingModule { }
